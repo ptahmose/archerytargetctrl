@@ -9,6 +9,15 @@
             "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceFolder}\\bin\\www"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome against localhost",
+            //"url": "http://localhost:8080",
+            //"url":"file:///D:/Dev/Github/ArcheryAppWebPlayground/TypeScriptHTMLApp1/index.html",
+            "url":"http://localhost:3000/pages/testpage1.html",
+            "webRoot": "${workspaceRoot}/targetcontrolts"
         }
     ]
 }
