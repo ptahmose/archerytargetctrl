@@ -107,7 +107,8 @@ var TargetCtrl = /** @class */ (function () {
     };
     TargetCtrl.prototype.insertHitsGroup = function () {
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        group.setAttribute('transform', 'scale(1024,1024)');
+        //group.setAttribute('transform', 'scale(1024,1024)');
+        group.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasWidth + ')');
         this.hitGroup = group;
         this.svgElement.getElementById('hits').appendChild(group);
     };
@@ -190,8 +191,8 @@ var TargetCtrl = /** @class */ (function () {
         //var t = 'translate(-1536,-1536) scale(4096,4096)  ';
         var wx = this.canvasWidth * zoom;
         var wy = this.canvasHeight * zoom;
-        var xx1 = (centerX / 1024) * wx - centerX;
-        var yy1 = (centerY / 1024) * wy - centerY;
+        var xx1 = (centerX / /*1024*/ this.canvasWidth) * wx - centerX;
+        var yy1 = (centerY / /*1024*/ this.canvasHeight) * wy - centerY;
         var t = 'translate(' + (-xx1) + ',' + (-yy1) + ') scale(' + wx + ',' + wy + ')  ';
         //var t = 'translate(-1524,-1524) scale(4096,4096)  ';
         /*var s = 1024 * zoom;
@@ -220,6 +221,13 @@ var TargetCtrl = /** @class */ (function () {
             this.runZoomInAnimation(ev, this.curZoom, 1, function () { _this.curInteractionMode = InteractionMode.Invalid; });
         }
     };
+    TargetCtrl.prototype.OnMouseMove = function (ev) {
+        ev.preventDefault();
+        if (this.curInteractionMode == InteractionMode.Mouse || this.curInteractionMode == InteractionMode.Invalid) {
+            var pos = this.getMousePos(this.element, ev);
+            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+        }
+    };
     TargetCtrl.prototype.OnTouchStart = function (ev) {
         ev.preventDefault();
         if (this.curInteractionMode == InteractionMode.Invalid) {
@@ -242,13 +250,6 @@ var TargetCtrl = /** @class */ (function () {
             this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
         }
         ev.preventDefault();
-    };
-    TargetCtrl.prototype.OnMouseMove = function (ev) {
-        ev.preventDefault();
-        if (this.curInteractionMode == InteractionMode.Mouse || this.curInteractionMode == InteractionMode.Invalid) {
-            var pos = this.getMousePos(this.element, ev);
-            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
-        }
     };
     TargetCtrl.prototype.OnTouchEnd = function (ev) {
         var _this = this;
@@ -404,6 +405,14 @@ window.onload = function () {
     var el = document.getElementById('myCanvas');
     var svg = document.getElementById('mySvg');
     //var el2 = <HTMLCanvasElement>document.getElementById('myCanvas2');
+    var div = document.getElementById('targetDiv');
+    var w = div.getAttribute('width');
+    var h = div.getAttribute('height');
+    svg.setAttribute('width', w + 'px');
+    svg.setAttribute('height', h + 'px');
+    svg.style.width = w + 'px';
+    svg.style.height = h + 'px';
+    //svg.width = div.width; 
     var greeter = new TargetCtrl(el, svg);
 };
 //# sourceMappingURL=targetctrl1.js.map

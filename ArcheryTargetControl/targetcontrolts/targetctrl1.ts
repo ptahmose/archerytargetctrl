@@ -152,7 +152,8 @@ class TargetCtrl implements IShotPositions {
 
     private insertHitsGroup(): void {
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        group.setAttribute('transform', 'scale(1024,1024)');
+        //group.setAttribute('transform', 'scale(1024,1024)');
+        group.setAttribute('transform', 'scale('+this.canvasWidth+','+this.canvasWidth+')');
         this.hitGroup = group;
         this.svgElement.getElementById('hits').appendChild(group);
     }
@@ -257,8 +258,8 @@ class TargetCtrl implements IShotPositions {
         var wx = this.canvasWidth * zoom;
         var wy = this.canvasHeight * zoom;
 
-        var xx1 = (centerX / 1024) * wx - centerX;
-        var yy1 = (centerY / 1024) * wy - centerY;
+        var xx1 = (centerX / /*1024*/this.canvasWidth) * wx - centerX;
+        var yy1 = (centerY / /*1024*/this.canvasHeight) * wy - centerY;
 
         var t = 'translate(' + (-xx1) + ',' + (-yy1) + ') scale(' + wx + ',' + wy + ')  ';
         //var t = 'translate(-1524,-1524) scale(4096,4096)  ';
@@ -292,6 +293,14 @@ class TargetCtrl implements IShotPositions {
         }
     }
 
+    OnMouseMove(ev: MouseEvent): void {
+        ev.preventDefault();
+        if (this.curInteractionMode == InteractionMode.Mouse||this.curInteractionMode==InteractionMode.Invalid) {
+            var pos = this.getMousePos(this.element, ev);
+            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+        }
+    }
+
     OnTouchStart(ev: TouchEvent): any {
         ev.preventDefault();
 
@@ -318,14 +327,6 @@ class TargetCtrl implements IShotPositions {
         }
 
         ev.preventDefault();
-    }
-
-    OnMouseMove(ev: MouseEvent): void {
-        ev.preventDefault();
-        if (this.curInteractionMode == InteractionMode.Mouse||this.curInteractionMode==InteractionMode.Invalid) {
-            var pos = this.getMousePos(this.element, ev);
-            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
-        }
     }
 
     OnTouchEnd(ev: TouchEvent): void {
@@ -542,6 +543,15 @@ window.onload = () => {
     var svg = document.getElementById('mySvg') as any as SVGSVGElement;
 
     //var el2 = <HTMLCanvasElement>document.getElementById('myCanvas2');
+
+    var div = document.getElementById('targetDiv') as HTMLDivElement;
+    var w = div.getAttribute('width');
+    var h = div.getAttribute('height');
+    svg.setAttribute('width',w+'px');
+    svg.setAttribute('height',h+'px');
+    svg.style.width=w+'px';
+    svg.style.height=h+'px';
+    //svg.width = div.width; 
 
     var greeter = new TargetCtrl(el, svg);
 };

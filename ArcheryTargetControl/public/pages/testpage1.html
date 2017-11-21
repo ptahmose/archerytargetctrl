@@ -23,13 +23,13 @@
 
     <!--https://robertnyman.com/2010/03/22/css-pointer-events-to-allow-clicks-on-underlying-elements/-->
     <!--https://stackoverflow.com/questions/24041111/can-i-place-a-svg-image-element-on-top-a-canvas-element-->
-    <div style="position: relative;">
-        <canvas id="myCanvas" style="touch-action: none;" width="1024" height="1024"></canvas>
+    <div id="targetDiv" style="touch-action: none;position: relative;" width="512" height="512">
+        <canvas id="myCanvas" style="touch-action: none;" width="512" height="512"></canvas>
 
         <!--<canvas id="myCanvas2" width="800" height="800"></canvas>-->
         
         <!-- https://stackoverflow.com/questions/5971320/svg-image-is-not-cropped-in-ie9 -->
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="mySvg" width="1024" height="1024" style="position: absolute; left: 0px; top: 0px; z-index: 2; width: 1024px;height: 1024px; pointer-events: none; overflow: hidden;">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="mySvg" width="0" height="0" style="touch-action: none;position: absolute; left: 0px; top: 0px; z-index: 2; width: 0px;height: 0px; pointer-events: none; overflow: hidden;">
             <defs>
                 <g id="shape">
                     <!--<line x1="-50" y1="-50" x2="50" y2="50" stroke="black" stroke-width="3"></line>-->
