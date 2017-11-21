@@ -1,8 +1,14 @@
 {
     "compilerOptions": {
-        "target": "es5",
+        "target": "es6",
         "module": "commonjs",
         "sourceMap": true,
         "outDir": "../public/javascripts"
+    },
+    "include": [
+        "./**/*"
+    ],
+    "dependencies": {
+        "jquery": "^3.2.1"
     }
 }
