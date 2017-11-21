@@ -51,6 +51,13 @@ interface IShotPositions {
 
 }
 
+enum InteractionMode {
+    Invalid,
+    Mouse,
+    Touch,
+    Stylus
+}
+
 class TargetCtrl implements IShotPositions {
     element: HTMLCanvasElement;
     canvasWidth: number;
@@ -65,13 +72,29 @@ class TargetCtrl implements IShotPositions {
 
     shotPositions: { x: number, y: number }[];
 
+
+
+    private curInteractionMode: InteractionMode;
+
     /**
      * If non-null, this is the x/y coordinate of the center of the (currently zoomed) display.
      * 
      * @type {{ x: number, y: number }}
      * @memberof TargetCtrl
      */
-    zoomCenterPos: { x: number, y: number };
+    private zoomCenterPos: { x: number, y: number };
+
+    private curZoom: number;
+
+    /**
+     * If non-null, then this is the currently active zoom-animation. If it is null, then
+     * there is no currently active animation.
+     * 
+     * @private
+     * @type {*}
+     * @memberof TargetCtrl
+     */
+    private zoomAnimation: any;
 
     static WhiteSegment = new ColorUtils.RGB(226, 216, 217);
     static BlackSegment = new ColorUtils.RGB(54, 49, 53);
@@ -88,7 +111,7 @@ class TargetCtrl implements IShotPositions {
 
     constructor(element: HTMLCanvasElement, svg: SVGSVGElement) {
         this.curZoom = 1;
-
+        this.curInteractionMode = InteractionMode.Invalid;
         this.element = element;
         this.svgElement = svg;
         this.setupEvents();
@@ -114,28 +137,24 @@ class TargetCtrl implements IShotPositions {
         this.crosshairElement = <SVGGElement>this.svgElement.getElementById('crosshairGroup');
     }
 
-    addShot(x: number, y: number): void {
+    /**
+     * Implementation of the method IShotPositions.addShot.
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @memberof TargetCtrl
+     */
+    public addShot(x: number, y: number): void {
         this.shotPositions.push({ x: x, y: y });
         this.drawHits(this.shotPositions);
         //throw new Error("Method not implemented.");
     }
 
     private insertHitsGroup(): void {
-        //var groupWithClip = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        //groupWithClip.setAttribute('style', "clip-path: url(#clipPath);");
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
         group.setAttribute('transform', 'scale(1024,1024)');
-        // group.setAttribute('style', "clip-path: url(#clipPath);");
         this.hitGroup = group;
-
-        //var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
-        //hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
-        //hit.setAttribute('transform', 'translate(0.25,0.25) scale(0.1,0.1)');
-        //group.appendChild(hit);
-
-        //groupWithClip.appendChild(group);
         this.svgElement.getElementById('hits').appendChild(group);
-        //this.svgElement.appendChild(group);
     }
 
     private drawHits(hitCoordinates: { x: number, y: number }[]): void {
@@ -153,36 +172,23 @@ class TargetCtrl implements IShotPositions {
         this.element.onmousedown = (ev: MouseEvent) => { this.OnMouseDown(ev); };
         this.element.onmouseup = (ev: MouseEvent) => { this.OnMouseUp(ev); }
         this.element.onmousemove = (ev: MouseEvent) => { this.OnMouseMove(ev); }
+       // this.element.onmouseout
 
-        this.element.addEventListener("touchstart",(ev:TouchEvent)=>{this.OnTouchStart(ev);}, false );
-        this.element.addEventListener("touchmove",(ev:TouchEvent)=>{this.OnTouchMove(ev);}, false );
-        this.element.addEventListener("touchend",(ev:TouchEvent)=>{this.OnTouchEnd(ev);}, false );
-       
+        this.element.addEventListener("touchstart", (ev: TouchEvent) => { this.OnTouchStart(ev); }, false);
+        this.element.addEventListener("touchmove", (ev: TouchEvent) => { this.OnTouchMove(ev); }, false);
+        this.element.addEventListener("touchend", (ev: TouchEvent) => { this.OnTouchEnd(ev); }, false);
+        this.element.addEventListener("ontouchcancel",(ev:TouchEvent)=> {this.OnTouchCancel(ev);},false);
 
-        //this.element.ontouchstart=(ev:TouchEvent)=>{this.OnTouchStart(ev);}
-        //this.element.ontouchmove=(ev:TouchEvent)=>{TouchEvent}
-        //this.element.ontouchend=(ev:TouchEvent)=>{this.OnTouchEnd(ev);}
-        
-
-        // this.element.addEventListener("contextmenu", function (e) {
-        //    // e.target.innerHTML = "Show a custom menu instead of the default context menu";
-        //     e.preventDefault();    // Disables system menu
-        //   }, false);
-        this.element.addEventListener("contextmenu", function(e) 
-        {
-             e.preventDefault(); 
-            },true);
+        this.element.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+        }, true);
 
         // this prevents the "hold-visual" from appearing (works only on Edge, cf. https://stackoverflow.com/questions/46714590/how-to-remove-default-box-outline-animation-in-chrome-on-touchstart-hold?noredirect=1&lq=1)
-        this.element.addEventListener("MSHoldVisual", function(e)
-         {
-              e.preventDefault();
-             }, false);
+        this.element.addEventListener("MSHoldVisual", function (e) {
+            e.preventDefault();
+        }, false);
     }
 
-    // private handleOnTouchStart = (evt:TouchEvent) => { // Since you want to pass this around  
-    //     this.OnTouchStart(evt);
-    // }
     setTransform(ctx: CanvasRenderingContext2D, centerX: number, centerY: number, zoom: number): void {
         zoom = 1 / zoom;
 
@@ -203,7 +209,7 @@ class TargetCtrl implements IShotPositions {
         ctx.setTransform(zoom, 0, 0, zoom, -xDiff, -yDiff);
     }
 
-    getMousePos(canvas: HTMLCanvasElement, evt: MouseEvent): { x: number, y: number } {
+    private getMousePos(canvas: HTMLCanvasElement, evt: MouseEvent): { x: number, y: number } {
         var rect = canvas.getBoundingClientRect();
         return {
             x: evt.clientX - rect.left,
@@ -211,13 +217,12 @@ class TargetCtrl implements IShotPositions {
         };
     }
 
-    getMousePosNormalized(canvas: HTMLCanvasElement, evt: MouseEvent): { x: number, y: number } {
+    private getMousePosNormalized(canvas: HTMLCanvasElement, evt: MouseEvent): { x: number, y: number } {
         var pos = this.getMousePos(canvas, evt);
         return { x: pos.x / this.canvasWidth, y: pos.y / this.canvasHeight };
     }
 
-    private curZoom: number;
-    private zoomAnimation: any;
+
 
     private setHitGraphicsTransform(centerX: number, centerY: number, zoom: number): void {
 
@@ -263,88 +268,93 @@ class TargetCtrl implements IShotPositions {
     }
 
     OnMouseDown(ev: MouseEvent): void {
-        // if (ev.touches && ev.touches.length > 0) {
-
-        // }
-
-
-        if (this.zoomAnimation != null) {
-            this.zoomAnimation.stop();
+        if (this.curInteractionMode == InteractionMode.Invalid) {
+            if (this.zoomAnimation != null) {
+                this.zoomAnimation.stop();
+            }
+            this.runZoomInAnimation(ev, this.curZoom, 0.1);
+            this.curInteractionMode = InteractionMode.Mouse;
         }
-        this.runZoomInAnimation(ev, this.curZoom, 0.1);
 
-        // this.setHitGraphicsTransform(512, 512, 1.0 / 3);
-
+        ev.preventDefault();
     }
 
     OnMouseUp(ev: MouseEvent): void {
-        if (this.zoomAnimation != null) {
-            this.zoomAnimation.stop();
+        if (this.curInteractionMode == InteractionMode.Mouse) {
+            if (this.zoomAnimation != null) {
+                this.zoomAnimation.stop();
+            }
+
+            var pos = this.getMousePosNormalized(this.element, ev);
+            var posTransformed = this.TransformToUnzoomedNormalized(pos);
+            this.addShot(posTransformed.x, posTransformed.y);
+            this.runZoomInAnimation(ev, this.curZoom, 1,()=>{this.curInteractionMode=InteractionMode.Invalid;});
         }
-
-        //this.runZoomInAnimation(ev, this.curZoom, 1);
-
-        var pos = this.getMousePosNormalized(this.element, ev);
-        var posTransformed = this.TransformToUnzoomedNormalized(pos);
-        this.addShot(posTransformed.x, posTransformed.y);
-        this.runZoomInAnimation(ev, this.curZoom, 1);     
     }
 
     OnTouchStart(ev: TouchEvent): any {
         ev.preventDefault();
-        
-        if (this.zoomAnimation != null) {
-            this.zoomAnimation.stop();
+
+        if (this.curInteractionMode == InteractionMode.Invalid) {
+            if (this.zoomAnimation != null) {
+                this.zoomAnimation.stop();
+            }
+
+            //console.log("Touch-Start" + ev.touches.length);
+            var rect = this.element.getBoundingClientRect();
+            var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            //console.log("Touch-Start" + ev.touches.length + " x=" + pos.x + " y=" + pos.y);
+            this.runZoomInAnimation_(pos, this.curZoom, 0.1);
+            this.curInteractionMode=InteractionMode.Touch;
         }
-        //throw new Error("Method not implemented.");
-        console.log("Touch-Start"+ev.touches.length);
-        var rect = this.element.getBoundingClientRect();
-       
-        var pos={x:ev.touches[0].clientX- rect.left,y:ev.touches[0].clientY- rect.top};
-        console.log("Touch-Start"+ev.touches.length+" x="+pos.x+" y="+pos.y);
-        this.runZoomInAnimation_(pos, this.curZoom, 0.1);
-     }
+    }
 
     OnTouchMove(ev: TouchEvent): any {
-        //throw new Error("Method not implemented.");
-        console.log("Touch-Move: "+ev.touches.length);
-        var rect = this.element.getBoundingClientRect();
-        var pos={x:ev.touches[0].clientX- rect.left,y:ev.touches[0].clientY- rect.top};
-        this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+        if (this.curInteractionMode == InteractionMode.Touch||this.curInteractionMode == InteractionMode.Invalid) {
+            //console.log("Touch-Move: " + ev.touches.length);
+            var rect = this.element.getBoundingClientRect();
+            var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+        }
+
         ev.preventDefault();
     }
 
     OnMouseMove(ev: MouseEvent): void {
         ev.preventDefault();
-        //console.debug(ev.x);
-        //console.debug(ev.y);
-        var pos = this.getMousePos(this.element, ev);
-        this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
-        //this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (ev.x-1024/2)/1024 + ',' + (ev.y-1024/2)/1024 + ') ');
-        //this.crosshairElement.setAttribute('transform', ' scale(1024,1024) translate(0.5 0) ');
-        //this.crosshairElement.setAttribute('transform', 'scale(1024,512) ');
-    }
-    OnTouchEnd(ev: TouchEvent): void {
-        if (this.zoomAnimation != null) {
-            this.zoomAnimation.stop();
+        if (this.curInteractionMode == InteractionMode.Mouse||this.curInteractionMode==InteractionMode.Invalid) {
+            var pos = this.getMousePos(this.element, ev);
+            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
         }
-        ev.preventDefault();
-
-        this.runZoomInAnimation_(this.zoomCenterPos, this.curZoom, 1);     
     }
 
-    private TransformToUnzoomedNormalized( pos:{ x: number, y: number }): { x: number, y: number }
-    {
-        if (this.curZoom==1||this.zoomCenterPos==null)
-        {
+    OnTouchEnd(ev: TouchEvent): void {
+        if (this.curInteractionMode == InteractionMode.Touch) {
+            if (this.zoomAnimation != null) {
+                this.zoomAnimation.stop();
+            }
+
+            this.runZoomInAnimation_(this.zoomCenterPos, this.curZoom, 1,()=>{this.curInteractionMode=InteractionMode.Invalid;});
+        }
+
+        ev.preventDefault();
+    }
+
+    OnTouchCancel(ev: TouchEvent):void{
+        if (this.curInteractionMode == InteractionMode.Touch) {
+        }
+    }
+
+    private TransformToUnzoomedNormalized(pos: { x: number, y: number }): { x: number, y: number } {
+        if (this.curZoom == 1 || this.zoomCenterPos == null) {
             return pos;
         }
 
-        var posAbs=this.DeNormalize(pos);
-        var diff = {dx:(posAbs.x-this.zoomCenterPos.x)*this.curZoom,dy:(posAbs.y-this.zoomCenterPos.y)*this.curZoom};
+        var posAbs = this.DeNormalize(pos);
+        var diff = { dx: (posAbs.x - this.zoomCenterPos.x) * this.curZoom, dy: (posAbs.y - this.zoomCenterPos.y) * this.curZoom };
         //var zoomCenterNormalized=this.Normalize(this.zoomCenterPos)
-        var pos2={x:this.zoomCenterPos.x+diff.dx,y:this.zoomCenterPos.y+diff.dy};
-        var posNormalized=this.Normalize(pos2);
+        var pos2 = { x: this.zoomCenterPos.x + diff.dx, y: this.zoomCenterPos.y + diff.dy };
+        var posNormalized = this.Normalize(pos2);
         return posNormalized;
     }
 
@@ -356,16 +366,16 @@ class TargetCtrl implements IShotPositions {
         return { x: pos.x * this.canvasWidth, y: pos.y * this.canvasHeight };
     }
 
-    private runZoomInAnimation(ev: MouseEvent, startZoom: number, endZoom: number): void {
-      this.runZoomInAnimation_(this.getMousePos(this.element, ev),startZoom,endZoom);
+    private runZoomInAnimation(ev: MouseEvent, startZoom: number, endZoom: number,whenDone?:()=>void): void {
+        this.runZoomInAnimation_(this.getMousePos(this.element, ev), startZoom, endZoom,whenDone);
     }
 
-    private runZoomInAnimation_(zoomCenter:{x:number,y:number}, startZoom: number, endZoom: number): void {
+    private runZoomInAnimation_(zoomCenter: { x: number, y: number }, startZoom: number, endZoom: number,whenDone?:()=>void): void {
         //var pos = this.getMousePos(this.element, ev);
-        this.zoomCenterPos=zoomCenter;//this.getMousePos(this.element, ev);
+        this.zoomCenterPos = zoomCenter;//this.getMousePos(this.element, ev);
         //this.setHitGraphicsTransform(pos.x, pos.y, endZoom);
         this.zoomAnimation = $({ xyz: startZoom });
-        /*$({ xyz: startZoom })*/this.zoomAnimation.animate(
+        this.zoomAnimation.animate(
             { xyz: endZoom },
             {
                 duration: 150,
@@ -387,8 +397,15 @@ class TargetCtrl implements IShotPositions {
 
                     this.curZoom = endZoom;
                     this.zoomAnimation = null;
-                    if (this.curZoom==1){
-                    this.zoomCenterPos=null;}
+                    if (this.curZoom == 1) {
+                        this.zoomCenterPos = null;
+                    }
+                },
+                always: (now, jumpedToEnd)=>
+                {
+                    //this.curInteractionMode=InteractionMode.Invalid;
+                    console.log("I am in always "+now+" "+jumpedToEnd);
+                    if (whenDone!=null)  whenDone();
                 }
             });
     }
