@@ -259,6 +259,8 @@ var TargetCtrl = /** @class */ (function () {
             var rect = this.element.getBoundingClientRect();
             var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
             //console.log("Touch-Start" + ev.touches.length + " x=" + pos.x + " y=" + pos.y);
+            //this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+            this.crosshairElement.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasWidth + ') translate(' + (pos.x - this.canvasWidth / 2) / this.canvasWidth + ',' + (pos.y - this.canvasHeight / 2) / this.canvasHeight + ') ');
             this.runZoomInAnimation_(pos, this.curZoom, 0.1);
             this.curInteractionMode = InteractionMode.Touch;
         }
@@ -268,7 +270,8 @@ var TargetCtrl = /** @class */ (function () {
             //console.log("Touch-Move: " + ev.touches.length);
             var rect = this.element.getBoundingClientRect();
             var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
-            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+            //this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+            this.crosshairElement.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasWidth + ') translate(' + (pos.x - this.canvasWidth / 2) / this.canvasWidth + ',' + (pos.y - this.canvasHeight / 2) / this.canvasHeight + ') ');
         }
         ev.preventDefault();
     };
