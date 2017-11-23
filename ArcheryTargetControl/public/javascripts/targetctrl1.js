@@ -134,6 +134,8 @@ var TargetCtrl = /** @class */ (function () {
         this.element.addEventListener("touchmove", function (ev) { _this.OnTouchMove(ev); }, false);
         this.element.addEventListener("touchend", function (ev) { _this.OnTouchEnd(ev); }, false);
         this.element.addEventListener("ontouchcancel", function (ev) { _this.OnTouchCancel(ev); }, false);
+        //this.element.addEventListener("keydown", (ev: KeyboardEvent) => { this.OnKeydown(ev); });
+        window.addEventListener("keydown", function (ev) { _this.OnKeydown(ev); });
         this.element.addEventListener("contextmenu", function (e) {
             e.preventDefault();
         }, true);
@@ -225,7 +227,10 @@ var TargetCtrl = /** @class */ (function () {
         ev.preventDefault();
         if (this.curInteractionMode == InteractionMode.Mouse || this.curInteractionMode == InteractionMode.Invalid) {
             var pos = this.getMousePos(this.element, ev);
-            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+            //this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+            var transX = (pos.x - this.canvasWidth / 2) / this.canvasWidth;
+            var transY = (pos.y - this.canvasHeight / 2) / this.canvasHeight;
+            this.crosshairElement.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasHeight + ') translate(' + transX + ',' + transY + ') ');
         }
     };
     TargetCtrl.prototype.OnTouchStart = function (ev) {
@@ -264,6 +269,20 @@ var TargetCtrl = /** @class */ (function () {
     TargetCtrl.prototype.OnTouchCancel = function (ev) {
         if (this.curInteractionMode == InteractionMode.Touch) {
         }
+    };
+    TargetCtrl.prototype.OnKeydown = function (ev) {
+        if (ev.keyCode == 27 || ev.keyCode == 8) {
+            if (this.curInteractionMode != InteractionMode.Invalid) {
+                this.CancelZoomAddArrowOperation();
+            }
+        }
+    };
+    TargetCtrl.prototype.CancelZoomAddArrowOperation = function () {
+        var _this = this;
+        if (this.zoomAnimation != null) {
+            this.zoomAnimation.stop();
+        }
+        this.runZoomInAnimation_(this.zoomCenterPos, this.curZoom, 1, function () { _this.curInteractionMode = InteractionMode.Invalid; });
     };
     TargetCtrl.prototype.TransformToUnzoomedNormalized = function (pos) {
         if (this.curZoom == 1 || this.zoomCenterPos == null) {
@@ -412,6 +431,8 @@ window.onload = function () {
     svg.setAttribute('height', h + 'px');
     svg.style.width = w + 'px';
     svg.style.height = h + 'px';
+    el.setAttribute('width', w + 'px');
+    el.setAttribute('height', h + 'px');
     //svg.width = div.width; 
     var greeter = new TargetCtrl(el, svg);
 };

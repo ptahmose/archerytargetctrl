@@ -153,7 +153,7 @@ class TargetCtrl implements IShotPositions {
     private insertHitsGroup(): void {
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
         //group.setAttribute('transform', 'scale(1024,1024)');
-        group.setAttribute('transform', 'scale('+this.canvasWidth+','+this.canvasWidth+')');
+        group.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasWidth + ')');
         this.hitGroup = group;
         this.svgElement.getElementById('hits').appendChild(group);
     }
@@ -173,12 +173,15 @@ class TargetCtrl implements IShotPositions {
         this.element.onmousedown = (ev: MouseEvent) => { this.OnMouseDown(ev); };
         this.element.onmouseup = (ev: MouseEvent) => { this.OnMouseUp(ev); }
         this.element.onmousemove = (ev: MouseEvent) => { this.OnMouseMove(ev); }
-       // this.element.onmouseout
+        // this.element.onmouseout
 
         this.element.addEventListener("touchstart", (ev: TouchEvent) => { this.OnTouchStart(ev); }, false);
         this.element.addEventListener("touchmove", (ev: TouchEvent) => { this.OnTouchMove(ev); }, false);
         this.element.addEventListener("touchend", (ev: TouchEvent) => { this.OnTouchEnd(ev); }, false);
-        this.element.addEventListener("ontouchcancel",(ev:TouchEvent)=> {this.OnTouchCancel(ev);},false);
+        this.element.addEventListener("ontouchcancel", (ev: TouchEvent) => { this.OnTouchCancel(ev); }, false);
+
+        //this.element.addEventListener("keydown", (ev: KeyboardEvent) => { this.OnKeydown(ev); });
+        window.addEventListener("keydown", (ev: KeyboardEvent) => { this.OnKeydown(ev); });
 
         this.element.addEventListener("contextmenu", function (e) {
             e.preventDefault();
@@ -289,15 +292,21 @@ class TargetCtrl implements IShotPositions {
             var pos = this.getMousePosNormalized(this.element, ev);
             var posTransformed = this.TransformToUnzoomedNormalized(pos);
             this.addShot(posTransformed.x, posTransformed.y);
-            this.runZoomInAnimation(ev, this.curZoom, 1,()=>{this.curInteractionMode=InteractionMode.Invalid;});
+            this.runZoomInAnimation(ev, this.curZoom, 1, () => { this.curInteractionMode = InteractionMode.Invalid; });
         }
     }
 
     OnMouseMove(ev: MouseEvent): void {
         ev.preventDefault();
-        if (this.curInteractionMode == InteractionMode.Mouse||this.curInteractionMode==InteractionMode.Invalid) {
+        if (this.curInteractionMode == InteractionMode.Mouse || this.curInteractionMode == InteractionMode.Invalid) {
             var pos = this.getMousePos(this.element, ev);
-            this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+            //this.crosshairElement.setAttribute('transform', 'scale(1024,1024) translate(' + (pos.x - 1024 / 2) / 1024 + ',' + (pos.y - 1024 / 2) / 1024 + ') ');
+            var transX = (pos.x - this.canvasWidth / 2) / this.canvasWidth;
+            var transY = (pos.y - this.canvasHeight / 2) / this.canvasHeight;
+            this.crosshairElement.setAttribute(
+                'transform',
+                'scale(' + this.canvasWidth + ',' + this.canvasHeight + ') translate(' + transX + ',' + transY + ') ');
+
         }
     }
 
@@ -314,12 +323,12 @@ class TargetCtrl implements IShotPositions {
             var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
             //console.log("Touch-Start" + ev.touches.length + " x=" + pos.x + " y=" + pos.y);
             this.runZoomInAnimation_(pos, this.curZoom, 0.1);
-            this.curInteractionMode=InteractionMode.Touch;
+            this.curInteractionMode = InteractionMode.Touch;
         }
     }
 
     OnTouchMove(ev: TouchEvent): any {
-        if (this.curInteractionMode == InteractionMode.Touch||this.curInteractionMode == InteractionMode.Invalid) {
+        if (this.curInteractionMode == InteractionMode.Touch || this.curInteractionMode == InteractionMode.Invalid) {
             //console.log("Touch-Move: " + ev.touches.length);
             var rect = this.element.getBoundingClientRect();
             var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
@@ -335,15 +344,31 @@ class TargetCtrl implements IShotPositions {
                 this.zoomAnimation.stop();
             }
 
-            this.runZoomInAnimation_(this.zoomCenterPos, this.curZoom, 1,()=>{this.curInteractionMode=InteractionMode.Invalid;});
+            this.runZoomInAnimation_(this.zoomCenterPos, this.curZoom, 1, () => { this.curInteractionMode = InteractionMode.Invalid; });
         }
 
         ev.preventDefault();
     }
 
-    OnTouchCancel(ev: TouchEvent):void{
+    OnTouchCancel(ev: TouchEvent): void {
         if (this.curInteractionMode == InteractionMode.Touch) {
         }
+    }
+
+    OnKeydown(ev: KeyboardEvent): void {
+        if (ev.keyCode == 27 || ev.keyCode == 8) {
+            if (this.curInteractionMode != InteractionMode.Invalid) {
+                this.CancelZoomAddArrowOperation();
+            }
+        }
+    }
+
+    private CancelZoomAddArrowOperation(): void {
+        if (this.zoomAnimation != null) {
+            this.zoomAnimation.stop();
+        }
+
+        this.runZoomInAnimation_(this.zoomCenterPos, this.curZoom, 1, () => { this.curInteractionMode = InteractionMode.Invalid; });
     }
 
     private TransformToUnzoomedNormalized(pos: { x: number, y: number }): { x: number, y: number } {
@@ -367,11 +392,11 @@ class TargetCtrl implements IShotPositions {
         return { x: pos.x * this.canvasWidth, y: pos.y * this.canvasHeight };
     }
 
-    private runZoomInAnimation(ev: MouseEvent, startZoom: number, endZoom: number,whenDone?:()=>void): void {
-        this.runZoomInAnimation_(this.getMousePos(this.element, ev), startZoom, endZoom,whenDone);
+    private runZoomInAnimation(ev: MouseEvent, startZoom: number, endZoom: number, whenDone?: () => void): void {
+        this.runZoomInAnimation_(this.getMousePos(this.element, ev), startZoom, endZoom, whenDone);
     }
 
-    private runZoomInAnimation_(zoomCenter: { x: number, y: number }, startZoom: number, endZoom: number,whenDone?:()=>void): void {
+    private runZoomInAnimation_(zoomCenter: { x: number, y: number }, startZoom: number, endZoom: number, whenDone?: () => void): void {
         //var pos = this.getMousePos(this.element, ev);
         this.zoomCenterPos = zoomCenter;//this.getMousePos(this.element, ev);
         //this.setHitGraphicsTransform(pos.x, pos.y, endZoom);
@@ -402,11 +427,10 @@ class TargetCtrl implements IShotPositions {
                         this.zoomCenterPos = null;
                     }
                 },
-                always: (now, jumpedToEnd)=>
-                {
+                always: (now, jumpedToEnd) => {
                     //this.curInteractionMode=InteractionMode.Invalid;
-                    console.log("I am in always "+now+" "+jumpedToEnd);
-                    if (whenDone!=null)  whenDone();
+                    console.log("I am in always " + now + " " + jumpedToEnd);
+                    if (whenDone != null) whenDone();
                 }
             });
     }
@@ -547,10 +571,12 @@ window.onload = () => {
     var div = document.getElementById('targetDiv') as HTMLDivElement;
     var w = div.getAttribute('width');
     var h = div.getAttribute('height');
-    svg.setAttribute('width',w+'px');
-    svg.setAttribute('height',h+'px');
-    svg.style.width=w+'px';
-    svg.style.height=h+'px';
+    svg.setAttribute('width', w + 'px');
+    svg.setAttribute('height', h + 'px');
+    svg.style.width = w + 'px';
+    svg.style.height = h + 'px';
+    el.setAttribute('width', w + 'px');
+    el.setAttribute('height', h + 'px');
     //svg.width = div.width; 
 
     var greeter = new TargetCtrl(el, svg);
