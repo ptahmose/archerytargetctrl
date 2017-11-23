@@ -76,6 +76,8 @@ class TargetCtrl implements IShotPositions {
 
     private curInteractionMode: InteractionMode;
 
+    private mouseIsOut:boolean;
+
     /**
      * If non-null, this is the x/y coordinate of the center of the (currently zoomed) display.
      * 
@@ -173,6 +175,9 @@ class TargetCtrl implements IShotPositions {
         this.element.onmousedown = (ev: MouseEvent) => { this.OnMouseDown(ev); };
         this.element.onmouseup = (ev: MouseEvent) => { this.OnMouseUp(ev); }
         this.element.onmousemove = (ev: MouseEvent) => { this.OnMouseMove(ev); }
+        this.element.addEventListener("mouseout",(ev:MouseEvent)=>{this.OnMouseOutEvent(ev);})
+
+        window.addEventListener("mouseup",(ev:MouseEvent)=>{this.OnMouseUpWindow(ev);});
         // this.element.onmouseout
 
         this.element.addEventListener("touchstart", (ev: TouchEvent) => { this.OnTouchStart(ev); }, false);
@@ -181,7 +186,7 @@ class TargetCtrl implements IShotPositions {
         this.element.addEventListener("ontouchcancel", (ev: TouchEvent) => { this.OnTouchCancel(ev); }, false);
 
         //this.element.addEventListener("keydown", (ev: KeyboardEvent) => { this.OnKeydown(ev); });
-        window.addEventListener("keydown", (ev: KeyboardEvent) => { this.OnKeydown(ev); });
+        window.addEventListener("keydown", (ev: KeyboardEvent) => { this.OnKeydownWindow(ev); });
 
         this.element.addEventListener("contextmenu", function (e) {
             e.preventDefault();
@@ -278,13 +283,14 @@ class TargetCtrl implements IShotPositions {
             }
             this.runZoomInAnimation(ev, this.curZoom, 0.1);
             this.curInteractionMode = InteractionMode.Mouse;
+            this.mouseIsOut=false;
         }
 
         ev.preventDefault();
     }
 
     OnMouseUp(ev: MouseEvent): void {
-        if (this.curInteractionMode == InteractionMode.Mouse) {
+        if (this.curInteractionMode == InteractionMode.Mouse && this.mouseIsOut==false) {
             if (this.zoomAnimation != null) {
                 this.zoomAnimation.stop();
             }
@@ -292,6 +298,21 @@ class TargetCtrl implements IShotPositions {
             var pos = this.getMousePosNormalized(this.element, ev);
             var posTransformed = this.TransformToUnzoomedNormalized(pos);
             this.addShot(posTransformed.x, posTransformed.y);
+            this.runZoomInAnimation(ev, this.curZoom, 1, () => { this.curInteractionMode = InteractionMode.Invalid; });
+        }
+    }
+
+    OnMouseOutEvent(ev:MouseEvent):void{
+        this.mouseIsOut=true;
+    }
+
+     OnMouseUpWindow(ev:MouseEvent):void{
+        if (this.mouseIsOut==true && this.curInteractionMode==InteractionMode.Mouse)
+        {
+            if (this.zoomAnimation != null) {
+                this.zoomAnimation.stop();
+            }
+
             this.runZoomInAnimation(ev, this.curZoom, 1, () => { this.curInteractionMode = InteractionMode.Invalid; });
         }
     }
@@ -307,6 +328,7 @@ class TargetCtrl implements IShotPositions {
                 'transform',
                 'scale(' + this.canvasWidth + ',' + this.canvasHeight + ') translate(' + transX + ',' + transY + ') ');
 
+            this.mouseIsOut=false;
         }
     }
 
@@ -355,7 +377,7 @@ class TargetCtrl implements IShotPositions {
         }
     }
 
-    OnKeydown(ev: KeyboardEvent): void {
+    OnKeydownWindow(ev: KeyboardEvent): void {
         if (ev.keyCode == 27 || ev.keyCode == 8) {
             if (this.curInteractionMode != InteractionMode.Invalid) {
                 this.CancelZoomAddArrowOperation();

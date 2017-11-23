@@ -129,13 +129,15 @@ var TargetCtrl = /** @class */ (function () {
         this.element.onmousedown = function (ev) { _this.OnMouseDown(ev); };
         this.element.onmouseup = function (ev) { _this.OnMouseUp(ev); };
         this.element.onmousemove = function (ev) { _this.OnMouseMove(ev); };
+        this.element.addEventListener("mouseout", function (ev) { _this.OnMouseOutEvent(ev); });
+        window.addEventListener("mouseup", function (ev) { _this.OnMouseUpWindow(ev); });
         // this.element.onmouseout
         this.element.addEventListener("touchstart", function (ev) { _this.OnTouchStart(ev); }, false);
         this.element.addEventListener("touchmove", function (ev) { _this.OnTouchMove(ev); }, false);
         this.element.addEventListener("touchend", function (ev) { _this.OnTouchEnd(ev); }, false);
         this.element.addEventListener("ontouchcancel", function (ev) { _this.OnTouchCancel(ev); }, false);
         //this.element.addEventListener("keydown", (ev: KeyboardEvent) => { this.OnKeydown(ev); });
-        window.addEventListener("keydown", function (ev) { _this.OnKeydown(ev); });
+        window.addEventListener("keydown", function (ev) { _this.OnKeydownWindow(ev); });
         this.element.addEventListener("contextmenu", function (e) {
             e.preventDefault();
         }, true);
@@ -208,18 +210,31 @@ var TargetCtrl = /** @class */ (function () {
             }
             this.runZoomInAnimation(ev, this.curZoom, 0.1);
             this.curInteractionMode = InteractionMode.Mouse;
+            this.mouseIsOut = false;
         }
         ev.preventDefault();
     };
     TargetCtrl.prototype.OnMouseUp = function (ev) {
         var _this = this;
-        if (this.curInteractionMode == InteractionMode.Mouse) {
+        if (this.curInteractionMode == InteractionMode.Mouse && this.mouseIsOut == false) {
             if (this.zoomAnimation != null) {
                 this.zoomAnimation.stop();
             }
             var pos = this.getMousePosNormalized(this.element, ev);
             var posTransformed = this.TransformToUnzoomedNormalized(pos);
             this.addShot(posTransformed.x, posTransformed.y);
+            this.runZoomInAnimation(ev, this.curZoom, 1, function () { _this.curInteractionMode = InteractionMode.Invalid; });
+        }
+    };
+    TargetCtrl.prototype.OnMouseOutEvent = function (ev) {
+        this.mouseIsOut = true;
+    };
+    TargetCtrl.prototype.OnMouseUpWindow = function (ev) {
+        var _this = this;
+        if (this.mouseIsOut == true && this.curInteractionMode == InteractionMode.Mouse) {
+            if (this.zoomAnimation != null) {
+                this.zoomAnimation.stop();
+            }
             this.runZoomInAnimation(ev, this.curZoom, 1, function () { _this.curInteractionMode = InteractionMode.Invalid; });
         }
     };
@@ -231,6 +246,7 @@ var TargetCtrl = /** @class */ (function () {
             var transX = (pos.x - this.canvasWidth / 2) / this.canvasWidth;
             var transY = (pos.y - this.canvasHeight / 2) / this.canvasHeight;
             this.crosshairElement.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasHeight + ') translate(' + transX + ',' + transY + ') ');
+            this.mouseIsOut = false;
         }
     };
     TargetCtrl.prototype.OnTouchStart = function (ev) {
@@ -270,7 +286,7 @@ var TargetCtrl = /** @class */ (function () {
         if (this.curInteractionMode == InteractionMode.Touch) {
         }
     };
-    TargetCtrl.prototype.OnKeydown = function (ev) {
+    TargetCtrl.prototype.OnKeydownWindow = function (ev) {
         if (ev.keyCode == 27 || ev.keyCode == 8) {
             if (this.curInteractionMode != InteractionMode.Invalid) {
                 this.CancelZoomAddArrowOperation();
