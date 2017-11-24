@@ -70,10 +70,16 @@ var InteractionMode;
     InteractionMode[InteractionMode["Touch"] = 2] = "Touch";
     InteractionMode[InteractionMode["Stylus"] = 3] = "Stylus";
 })(InteractionMode || (InteractionMode = {}));
+var MouseInteractionState;
+(function (MouseInteractionState) {
+    MouseInteractionState[MouseInteractionState["Invalid"] = 0] = "Invalid";
+    MouseInteractionState[MouseInteractionState["OutOfElement"] = 1] = "OutOfElement";
+})(MouseInteractionState || (MouseInteractionState = {}));
 var TargetCtrl = /** @class */ (function () {
     function TargetCtrl(element, svg) {
         this.curZoom = 1;
         this.curInteractionMode = InteractionMode.Invalid;
+        this.curMouseInteractionState = MouseInteractionState.Invalid;
         this.element = element;
         this.svgElement = svg;
         this.setupEvents();
@@ -131,6 +137,7 @@ var TargetCtrl = /** @class */ (function () {
         this.element.onmousemove = function (ev) { _this.OnMouseMove(ev); };
         this.element.addEventListener("mouseout", function (ev) { _this.OnMouseOutEvent(ev); });
         window.addEventListener("mouseup", function (ev) { _this.OnMouseUpWindow(ev); });
+        window.addEventListener("mousemove", function (ev) { _this.OnMouseMoveWindow(ev); });
         // this.element.onmouseout
         this.element.addEventListener("touchstart", function (ev) { _this.OnTouchStart(ev); }, false);
         this.element.addEventListener("touchmove", function (ev) { _this.OnTouchMove(ev); }, false);
@@ -227,16 +234,66 @@ var TargetCtrl = /** @class */ (function () {
         }
     };
     TargetCtrl.prototype.OnMouseOutEvent = function (ev) {
-        this.mouseIsOut = true;
+        /*this.mouseIsOut=true;
+        var pos = this.getMousePosNormalized(this.element, ev);
+        console.log("MouseOut: "+pos.x+' '+pos.y);
+        var dir = {x:2*(pos.x-0.5),y:2*(pos.y-0.5)};
+        this.zoomCenterPos.x += dir.x* 50;
+        this.zoomCenterPos.y += dir.y* 50;
+        var ctx = this.element.getContext("2d");
+        this.drawZoomed(ctx, this.zoomCenterPos.x, this.zoomCenterPos.y, 0.1);*/
+        if (this.curInteractionMode == InteractionMode.Mouse) {
+            this.curMouseInteractionState = MouseInteractionState.OutOfElement;
+        }
     };
     TargetCtrl.prototype.OnMouseUpWindow = function (ev) {
         var _this = this;
-        if (this.mouseIsOut == true && this.curInteractionMode == InteractionMode.Mouse) {
+        if (this.curMouseInteractionState == MouseInteractionState.OutOfElement && this.curInteractionMode == InteractionMode.Mouse) {
             if (this.zoomAnimation != null) {
                 this.zoomAnimation.stop();
             }
+            this.lastMousePosNormalized = null;
+            this.curMouseInteractionState = MouseInteractionState.Invalid;
+            if (this.timerMouseOfElement != null) {
+                window.clearInterval(this.timerMouseOfElement);
+                this.timerMouseOfElement = null;
+            }
             this.runZoomInAnimation(ev, this.curZoom, 1, function () { _this.curInteractionMode = InteractionMode.Invalid; });
         }
+    };
+    TargetCtrl.prototype.OnMouseMoveWindow = function (ev) {
+        var _this = this;
+        if (this.curMouseInteractionState == MouseInteractionState.OutOfElement) {
+            if (this.timerMouseOfElement == null) {
+                this.timerMouseOfElement = window.setInterval(function () { _this.OnTimerMouseOutOfElement(); }, 1000 / TargetCtrl.FpsForTimerOutOfElement);
+            }
+            var pos = this.getMousePosNormalized(this.element, ev);
+            this.lastMousePosNormalized = pos;
+            //(this.curMouseInteractionState = MouseInteractionState.
+            //this.curMouseInteractionState==MouseInteractionState.OutOfElementTimerSet;
+            /*
+                var pos = this.getMousePosNormalized(this.element, ev);
+                var dir = {x:2*(pos.x-0.5),y:2*(pos.y-0.5)};
+                this.zoomCenterPos.x += dir.x* 50;
+                this.zoomCenterPos.y += dir.y* 50;
+                var ctx = this.element.getContext("2d");
+                this.drawZoomed(ctx, this.zoomCenterPos.x, this.zoomCenterPos.y, 0.1);*/
+        }
+    };
+    TargetCtrl.prototype.OnTimerMouseOutOfElement = function () {
+        if (this.lastMousePosNormalized == null || this.curInteractionMode != InteractionMode.Mouse) {
+            return;
+        }
+        var dir = { x: 2 * (this.lastMousePosNormalized.x - 0.5), y: 2 * (this.lastMousePosNormalized.y - 0.5) };
+        var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+        dir = { x: dir.x / l, y: dir.y / l };
+        var sx = TargetCtrl.ScrollSpeed * this.canvasWidth / TargetCtrl.FpsForTimerOutOfElement;
+        var sy = TargetCtrl.ScrollSpeed * this.canvasHeight / TargetCtrl.FpsForTimerOutOfElement;
+        this.zoomCenterPos.x += dir.x * sx /*5*/;
+        this.zoomCenterPos.y += dir.y * sy /*5*/;
+        var ctx = this.element.getContext("2d");
+        this.drawZoomed(ctx, this.zoomCenterPos.x, this.zoomCenterPos.y, this.curZoom);
+        this.setHitGraphicsTransform(this.zoomCenterPos.x, this.zoomCenterPos.y, this.curZoom);
     };
     TargetCtrl.prototype.OnMouseMove = function (ev) {
         ev.preventDefault();
@@ -248,6 +305,12 @@ var TargetCtrl = /** @class */ (function () {
             this.crosshairElement.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasHeight + ') translate(' + transX + ',' + transY + ') ');
             this.mouseIsOut = false;
         }
+        if (this.timerMouseOfElement != null) {
+            window.clearInterval(this.timerMouseOfElement);
+            this.timerMouseOfElement = null;
+        }
+        this.lastMousePosNormalized = null;
+        this.curMouseInteractionState = MouseInteractionState.Invalid;
     };
     TargetCtrl.prototype.OnTouchStart = function (ev) {
         ev.preventDefault();
@@ -294,6 +357,11 @@ var TargetCtrl = /** @class */ (function () {
             if (this.curInteractionMode != InteractionMode.Invalid) {
                 this.CancelZoomAddArrowOperation();
             }
+        }
+        else if (ev.keyCode == 40) {
+            this.zoomCenterPos.y += 20;
+            var ctx = this.element.getContext("2d");
+            this.drawZoomed(ctx, this.zoomCenterPos.x, this.zoomCenterPos.y, 0.1);
         }
     };
     TargetCtrl.prototype.CancelZoomAddArrowOperation = function () {
@@ -434,6 +502,15 @@ var TargetCtrl = /** @class */ (function () {
     TargetCtrl.BlueSegmentText = new ColorUtils.RGB(0, 56, 85);
     TargetCtrl.Black = new ColorUtils.RGB(0, 0, 0);
     TargetCtrl.White = new ColorUtils.RGB(255, 255, 255);
+    /**
+     * Gives the "speed of scrolling" (if the mouse is outside of the element). It is given in factor
+     *
+     * @static
+     * @type {number}
+     * @memberof TargetCtrl
+     */
+    TargetCtrl.ScrollSpeed = 0.1;
+    TargetCtrl.FpsForTimerOutOfElement = 10;
     return TargetCtrl;
 }());
 window.onload = function () {
