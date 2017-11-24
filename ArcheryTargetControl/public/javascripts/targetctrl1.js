@@ -217,13 +217,13 @@ var TargetCtrl = /** @class */ (function () {
             }
             this.runZoomInAnimation(ev, this.curZoom, 0.1);
             this.curInteractionMode = InteractionMode.Mouse;
-            this.mouseIsOut = false;
+            //this.mouseIsOut = false;
         }
         ev.preventDefault();
     };
     TargetCtrl.prototype.OnMouseUp = function (ev) {
         var _this = this;
-        if (this.curInteractionMode == InteractionMode.Mouse && this.mouseIsOut == false) {
+        if (this.curInteractionMode == InteractionMode.Mouse /* && this.mouseIsOut == false*/) {
             if (this.zoomAnimation != null) {
                 this.zoomAnimation.stop();
             }
@@ -303,7 +303,7 @@ var TargetCtrl = /** @class */ (function () {
             var transX = (pos.x - this.canvasWidth / 2) / this.canvasWidth;
             var transY = (pos.y - this.canvasHeight / 2) / this.canvasHeight;
             this.crosshairElement.setAttribute('transform', 'scale(' + this.canvasWidth + ',' + this.canvasHeight + ') translate(' + transX + ',' + transY + ') ');
-            this.mouseIsOut = false;
+            //this.mouseIsOut = false;
         }
         if (this.timerMouseOfElement != null) {
             window.clearInterval(this.timerMouseOfElement);

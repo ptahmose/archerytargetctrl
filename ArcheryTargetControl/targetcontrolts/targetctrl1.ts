@@ -83,7 +83,7 @@ class TargetCtrl implements IShotPositions {
 
     private curMouseInteractionState: MouseInteractionState;
 
-    private mouseIsOut: boolean;
+    ////private mouseIsOut: boolean;
 
     private timerMouseOfElement: number;
     private lastMousePosNormalized: { x: number, y: number };
@@ -293,14 +293,14 @@ class TargetCtrl implements IShotPositions {
             }
             this.runZoomInAnimation(ev, this.curZoom, 0.1);
             this.curInteractionMode = InteractionMode.Mouse;
-            this.mouseIsOut = false;
+            //this.mouseIsOut = false;
         }
 
         ev.preventDefault();
     }
 
     private OnMouseUp(ev: MouseEvent): void {
-        if (this.curInteractionMode == InteractionMode.Mouse && this.mouseIsOut == false) {
+        if (this.curInteractionMode == InteractionMode.Mouse/* && this.mouseIsOut == false*/) {
             if (this.zoomAnimation != null) {
                 this.zoomAnimation.stop();
             }
@@ -404,14 +404,14 @@ class TargetCtrl implements IShotPositions {
                 'transform',
                 'scale(' + this.canvasWidth + ',' + this.canvasHeight + ') translate(' + transX + ',' + transY + ') ');
 
-            this.mouseIsOut = false;
+            //this.mouseIsOut = false;
         }
 
         if (this.timerMouseOfElement != null) {
             window.clearInterval(this.timerMouseOfElement);
             this.timerMouseOfElement=null;
         }
-        
+
         this.lastMousePosNormalized = null;
         this.curMouseInteractionState = MouseInteractionState.Invalid;
     }
