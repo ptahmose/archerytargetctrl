@@ -1,5 +1,7 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 //import { SignalList, ISignal } from '../node_modules/strongly-typed-events/strongly-typed-events'
-///import {  SimpleEventDispatcher, SignalDispatcher, EventDispatcher, ISignal, IEvent, ISimpleEvent } from '../node_modules/strongly-typed-events/strongly-typed-events'
+var strongly_typed_events_1 = require("../node_modules/strongly-typed-events/strongly-typed-events");
 //import "../node_modules/jquery/dist/jquery.min.js";
 //declare var $: any;
 //import "../node_modules/jquery/dist/jquery.min.js"
@@ -79,6 +81,7 @@ var MouseInteractionState;
 })(MouseInteractionState || (MouseInteractionState = {}));
 var TargetCtrl = /** @class */ (function () {
     function TargetCtrl(element, svg) {
+        this._hitsChangedEvent = new strongly_typed_events_1.EventDispatcher();
         this.curZoom = 1;
         this.curInteractionMode = InteractionMode.Invalid;
         this.curMouseInteractionState = MouseInteractionState.Invalid;
@@ -101,9 +104,13 @@ var TargetCtrl = /** @class */ (function () {
         this.drawHits(h);
         this.crosshairElement = this.svgElement.getElementById('crosshairGroup');
     }
-    TargetCtrl.prototype.SetHitsChangedCallback = function (fc) {
-        this._hitsChangedEvent = fc;
-    };
+    Object.defineProperty(TargetCtrl.prototype, "onHitsChanged", {
+        get: function () {
+            return this._hitsChangedEvent.asEvent();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Implementation of the method IShotPositions.addShot.
      *
@@ -114,14 +121,8 @@ var TargetCtrl = /** @class */ (function () {
     TargetCtrl.prototype.addShot = function (x, y) {
         this.shotPositions.push({ x: x, y: y });
         this.drawHits(this.shotPositions);
-        //this._hitsChangedEvent.dispatch(this,42);
-        if (this._hitsChangedEvent != null) {
-            this._hitsChangedEvent(this, 42);
-        }
+        this._hitsChangedEvent.dispatch(this, 42);
         //throw new Error("Method not implemented.");
-    };
-    TargetCtrl.prototype.getShots = function () {
-        return this.shotPositions;
     };
     TargetCtrl.prototype.insertHitsGroup = function () {
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
@@ -545,7 +546,6 @@ window.onload = function () {
     var greeter = new TargetCtrl(el, svg);
     var tableElement = document.getElementById('resultTable');
     var table = new ShotResultTable(tableElement);
-    greeter.SetHitsChangedCallback(function (o, n) { return table.OnTableChanged(o, n); });
-    //greeter.onHitsChanged.subscribe((c,n)=>table.OnTableChanged())
+    greeter.onHitsChanged.subscribe(function (c, n) { return table.OnTableChanged(); });
 };
 //# sourceMappingURL=targetctrl1.js.map

@@ -1,11 +1,9 @@
-var Startup = /** @class */ (function () {
-    function Startup() {
-    }
-    Startup.main = function () {
+/*class Startup {
+    public static main(): number {
         console.log('Hello World');
         return 0;
-    };
-    return Startup;
-}());
-Startup.main();
+    }
+}
+
+Startup.main();*/ 
 //# sourceMappingURL=test.js.map

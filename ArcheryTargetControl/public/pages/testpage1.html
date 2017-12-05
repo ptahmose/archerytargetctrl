@@ -12,7 +12,15 @@
     <script src="out/app.js"></script> -->
     <script src="../javascripts/ColorUtils.js"></script>
     <!-- <script src="../javascripts/test.js"></script> -->
+    <!-- <script src="../javascripts/node_modules/strongly-typed-events/strongly-typed-events.js"></script> -->
+    <script src="../javascripts/resulttable.js"></script>
     <script src="../javascripts/targetctrl1.js"></script>
+
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
 </head>
 <body>
     <h1>TypeScript HTML App.</h1>
@@ -62,7 +70,18 @@
         </svg>
     </div>
 
-
+    <div id="resultTableDiv">
+        <table id="resultTable" style="width:100%">
+            <tr>
+              <th>Score</th>
+              <th>Position</th> 
+            </tr>
+            <tr>
+              <td>8</td>
+              <td>x:0.4 y:0.5</td> 
+            </tr>
+          </table> 
+    </div>
 
 </body>
 </html>

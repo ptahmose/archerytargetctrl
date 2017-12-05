@@ -1,3 +1,5 @@
+//import { SignalList, ISignal } from '../node_modules/strongly-typed-events/strongly-typed-events'
+///import {  SimpleEventDispatcher, SignalDispatcher, EventDispatcher, ISignal, IEvent, ISimpleEvent } from '../node_modules/strongly-typed-events/strongly-typed-events'
 //import "../node_modules/jquery/dist/jquery.min.js";
 //declare var $: any;
 //import "../node_modules/jquery/dist/jquery.min.js"
@@ -46,9 +48,15 @@ class CanvasInfo {
     get radiusY(): number { return this.height / 2; }
 }
 
+interface IShot{
+    xNormalized:number;
+    yNormalized:number;
+    Score:number;
+}
+
 interface IShotPositions {
     addShot(x: number, y: number): void;
-
+    getShots():{ x: number, y: number }[];
 }
 
 enum InteractionMode {
@@ -121,6 +129,14 @@ class TargetCtrl implements IShotPositions {
     static Black = new ColorUtils.RGB(0, 0, 0);
     static White = new ColorUtils.RGB(255, 255, 255);
 
+    private _hitsChangedEvent :  (TargetCtrl,number)=>void;
+    
+    public SetHitsChangedCallback(fc: ((TargetCtrl,number)=>void)):void
+    {
+        this._hitsChangedEvent=fc;
+    }
+
+
     constructor(element: HTMLCanvasElement, svg: SVGSVGElement) {
         this.curZoom = 1;
         this.curInteractionMode = InteractionMode.Invalid;
@@ -160,7 +176,16 @@ class TargetCtrl implements IShotPositions {
     public addShot(x: number, y: number): void {
         this.shotPositions.push({ x: x, y: y });
         this.drawHits(this.shotPositions);
+        //this._hitsChangedEvent.dispatch(this,42);
+        if (this._hitsChangedEvent!=null)
+        {
+            this._hitsChangedEvent(this,42);
+        }
         //throw new Error("Method not implemented.");
+    }
+
+    public getShots():{ x: number, y: number }[]{
+        return this.shotPositions;
     }
 
     private insertHitsGroup(): void {
@@ -699,4 +724,9 @@ window.onload = () => {
     //svg.width = div.width; 
 
     var greeter = new TargetCtrl(el, svg);
+
+    var tableElement = document.getElementById('resultTable') as HTMLTableElement;
+    var table = new ShotResultTable(tableElement);
+    greeter.SetHitsChangedCallback((o,n)=>table.OnTableChanged(o,n));
+    //greeter.onHitsChanged.subscribe((c,n)=>table.OnTableChanged())
 };
