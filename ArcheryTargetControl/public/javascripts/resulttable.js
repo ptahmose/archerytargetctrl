@@ -20,14 +20,23 @@ var ShotResultTable = /** @class */ (function () {
             }
         }
     };
+    /*private AddRows(shots: { x: number, y: number }[]): void {
+        shots.forEach(element => {
+            var row = this.element.insertRow(-1);
+            var dataCell = row.insertCell(-1);
+            dataCell.innerHTML = element.x.toString();
+            dataCell = row.insertCell(-1);
+            dataCell.innerHTML = element.y.toString();
+        });
+    }*/
     ShotResultTable.prototype.AddRows = function (shots) {
         var _this = this;
         shots.forEach(function (element) {
             var row = _this.element.insertRow(-1);
             var dataCell = row.insertCell(-1);
-            dataCell.innerHTML = element.x.toString();
+            dataCell.innerHTML = element.xNormalized + "," + element.yNormalized;
             dataCell = row.insertCell(-1);
-            dataCell.innerHTML = element.y.toString();
+            dataCell.innerHTML = element.score.toString();
         });
     };
     return ShotResultTable;

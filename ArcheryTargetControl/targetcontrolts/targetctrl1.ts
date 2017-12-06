@@ -48,15 +48,16 @@ class CanvasInfo {
     get radiusY(): number { return this.height / 2; }
 }
 
-interface IShot{
-    xNormalized:number;
-    yNormalized:number;
-    Score:number;
+interface IShot {
+    readonly xNormalized: number;
+    readonly yNormalized: number;
+    readonly score: number;
 }
 
 interface IShotPositions {
     addShot(x: number, y: number): void;
-    getShots():{ x: number, y: number }[];
+    //getShots(): { x: number, y: number }[];
+    getShots():IShot[];
 }
 
 enum InteractionMode {
@@ -71,6 +72,16 @@ enum MouseInteractionState {
     OutOfElement
 }
 
+class Shot implements IShot {
+    xNormalized: number;
+    yNormalized: number;
+    score: number;
+
+    constructor(xNormalized: number, yNormalized: number, score: number) {
+        this.xNormalized = xNormalized; this.yNormalized = yNormalized; this.score = score;
+    }
+}
+
 class TargetCtrl implements IShotPositions {
     element: HTMLCanvasElement;
     canvasWidth: number;
@@ -83,7 +94,8 @@ class TargetCtrl implements IShotPositions {
 
     hitGroup: SVGGElement;
 
-    shotPositions: { x: number, y: number }[];
+    //shotPositions: { x: number, y: number }[];
+    shotPositions:IShot[];
 
 
 
@@ -129,11 +141,10 @@ class TargetCtrl implements IShotPositions {
     static Black = new ColorUtils.RGB(0, 0, 0);
     static White = new ColorUtils.RGB(255, 255, 255);
 
-    private _hitsChangedEvent :  (TargetCtrl,number)=>void;
-    
-    public SetHitsChangedCallback(fc: ((TargetCtrl,number)=>void)):void
-    {
-        this._hitsChangedEvent=fc;
+    private _hitsChangedEvent: (TargetCtrl, number) => void;
+
+    public SetHitsChangedCallback(fc: ((TargetCtrl, number) => void)): void {
+        this._hitsChangedEvent = fc;
     }
 
 
@@ -159,7 +170,8 @@ class TargetCtrl implements IShotPositions {
         ctxBackup.drawImage(this.element, 0, 0, this.canvasWidth, this.canvasHeight);
 
         this.insertHitsGroup();
-        var h = [{ x: 0.25, y: 0.25 }, { x: 0.25, y: 0.75 }, { x: 0.75, y: 0.25 }, { x: 0.75, y: 0.75 }, { x: 0.5, y: 0.5 }];
+        //var h = [{ x: 0.25, y: 0.25 }, { x: 0.25, y: 0.75 }, { x: 0.75, y: 0.25 }, { x: 0.75, y: 0.75 }, { x: 0.5, y: 0.5 }];
+        var h = [new Shot( 0.25, 0.25,6),new Shot(0.25, 0.75,7), new Shot( 0.75, 0.25,6), new Shot( 0.75,0.75,6),new Shot( 0.5, 0.5,10)];
         this.shotPositions = h;
         this.drawHits(h);
 
@@ -174,19 +186,22 @@ class TargetCtrl implements IShotPositions {
      * @memberof TargetCtrl
      */
     public addShot(x: number, y: number): void {
-        this.shotPositions.push({ x: x, y: y });
+        this.shotPositions.push(new Shot( x, y,2));
         this.drawHits(this.shotPositions);
         //this._hitsChangedEvent.dispatch(this,42);
-        if (this._hitsChangedEvent!=null)
-        {
-            this._hitsChangedEvent(this,42);
+        if (this._hitsChangedEvent != null) {
+            this._hitsChangedEvent(this, 42);
         }
         //throw new Error("Method not implemented.");
     }
 
-    public getShots():{ x: number, y: number }[]{
+    // public getShots(): { x: number, y: number }[] {
+    //     return this.shotPositions;
+    // }
+    public getShots(): IShot[] {
         return this.shotPositions;
     }
+
 
     private insertHitsGroup(): void {
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
@@ -196,13 +211,23 @@ class TargetCtrl implements IShotPositions {
         this.svgElement.getElementById('hits').appendChild(group);
     }
 
-    private drawHits(hitCoordinates: { x: number, y: number }[]): void {
+    /*private drawHits(hitCoordinates: { x: number, y: number }[]): void {
         while (this.hitGroup.firstChild) { this.hitGroup.removeChild(this.hitGroup.firstChild); }
 
         hitCoordinates.forEach((v) => {
             var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
             hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
             hit.setAttribute('transform', 'translate(' + v.x.toString() + ',' + v.y.toString() + ') scale(0.1,0.1)');
+            this.hitGroup.appendChild(hit);
+        });
+    }*/
+    private drawHits(hitCoordinates: IShot[]): void {
+        while (this.hitGroup.firstChild) { this.hitGroup.removeChild(this.hitGroup.firstChild); }
+
+        hitCoordinates.forEach((v) => {
+            var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
+            hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
+            hit.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
             this.hitGroup.appendChild(hit);
         });
     }
@@ -363,7 +388,7 @@ class TargetCtrl implements IShotPositions {
             this.curMouseInteractionState = MouseInteractionState.Invalid;
             if (this.timerMouseOfElement != null) {
                 window.clearInterval(this.timerMouseOfElement);
-                this.timerMouseOfElement=null;
+                this.timerMouseOfElement = null;
             }
 
             this.runZoomInAnimation(ev, this.curZoom, 1, () => { this.curInteractionMode = InteractionMode.Invalid; });
@@ -407,8 +432,8 @@ class TargetCtrl implements IShotPositions {
         var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
         dir = { x: dir.x / l, y: dir.y / l };
 
-        var sx = TargetCtrl.ScrollSpeed*this.canvasWidth / TargetCtrl.FpsForTimerOutOfElement;
-        var sy = TargetCtrl.ScrollSpeed*this.canvasHeight / TargetCtrl.FpsForTimerOutOfElement;
+        var sx = TargetCtrl.ScrollSpeed * this.canvasWidth / TargetCtrl.FpsForTimerOutOfElement;
+        var sy = TargetCtrl.ScrollSpeed * this.canvasHeight / TargetCtrl.FpsForTimerOutOfElement;
 
         this.zoomCenterPos.x += dir.x * sx/*5*/;
         this.zoomCenterPos.y += dir.y * sy/*5*/;
@@ -434,7 +459,7 @@ class TargetCtrl implements IShotPositions {
 
         if (this.timerMouseOfElement != null) {
             window.clearInterval(this.timerMouseOfElement);
-            this.timerMouseOfElement=null;
+            this.timerMouseOfElement = null;
         }
 
         this.lastMousePosNormalized = null;
@@ -727,6 +752,6 @@ window.onload = () => {
 
     var tableElement = document.getElementById('resultTable') as HTMLTableElement;
     var table = new ShotResultTable(tableElement);
-    greeter.SetHitsChangedCallback((o,n)=>table.OnTableChanged(o,n));
+    greeter.SetHitsChangedCallback((o, n) => table.OnTableChanged(o, n));
     //greeter.onHitsChanged.subscribe((c,n)=>table.OnTableChanged())
 };

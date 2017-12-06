@@ -27,13 +27,22 @@ class ShotResultTable {
         }
     }
 
-    private AddRows(shots: { x: number, y: number }[]): void {
+    /*private AddRows(shots: { x: number, y: number }[]): void {
         shots.forEach(element => {
             var row = this.element.insertRow(-1);
             var dataCell = row.insertCell(-1);
             dataCell.innerHTML = element.x.toString();
             dataCell = row.insertCell(-1);
             dataCell.innerHTML = element.y.toString();
+        });
+    }*/
+    private AddRows(shots: IShot[]): void {
+        shots.forEach(element => {
+            var row = this.element.insertRow(-1);
+            var dataCell = row.insertCell(-1);
+            dataCell.innerHTML = element.score.toString();
+            dataCell = row.insertCell(-1);
+            dataCell.innerHTML = element.xNormalized+","+element.yNormalized;
         });
     }
 }

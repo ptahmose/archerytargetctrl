@@ -77,6 +77,14 @@ var MouseInteractionState;
     MouseInteractionState[MouseInteractionState["Invalid"] = 0] = "Invalid";
     MouseInteractionState[MouseInteractionState["OutOfElement"] = 1] = "OutOfElement";
 })(MouseInteractionState || (MouseInteractionState = {}));
+var Shot = /** @class */ (function () {
+    function Shot(xNormalized, yNormalized, score) {
+        this.xNormalized = xNormalized;
+        this.yNormalized = yNormalized;
+        this.score = score;
+    }
+    return Shot;
+}());
 var TargetCtrl = /** @class */ (function () {
     function TargetCtrl(element, svg) {
         this.curZoom = 1;
@@ -96,7 +104,8 @@ var TargetCtrl = /** @class */ (function () {
         var ctxBackup = this.backupElement.getContext("2d");
         ctxBackup.drawImage(this.element, 0, 0, this.canvasWidth, this.canvasHeight);
         this.insertHitsGroup();
-        var h = [{ x: 0.25, y: 0.25 }, { x: 0.25, y: 0.75 }, { x: 0.75, y: 0.25 }, { x: 0.75, y: 0.75 }, { x: 0.5, y: 0.5 }];
+        //var h = [{ x: 0.25, y: 0.25 }, { x: 0.25, y: 0.75 }, { x: 0.75, y: 0.25 }, { x: 0.75, y: 0.75 }, { x: 0.5, y: 0.5 }];
+        var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
         this.shotPositions = h;
         this.drawHits(h);
         this.crosshairElement = this.svgElement.getElementById('crosshairGroup');
@@ -112,7 +121,7 @@ var TargetCtrl = /** @class */ (function () {
      * @memberof TargetCtrl
      */
     TargetCtrl.prototype.addShot = function (x, y) {
-        this.shotPositions.push({ x: x, y: y });
+        this.shotPositions.push(new Shot(x, y, 2));
         this.drawHits(this.shotPositions);
         //this._hitsChangedEvent.dispatch(this,42);
         if (this._hitsChangedEvent != null) {
@@ -120,6 +129,9 @@ var TargetCtrl = /** @class */ (function () {
         }
         //throw new Error("Method not implemented.");
     };
+    // public getShots(): { x: number, y: number }[] {
+    //     return this.shotPositions;
+    // }
     TargetCtrl.prototype.getShots = function () {
         return this.shotPositions;
     };
@@ -130,6 +142,16 @@ var TargetCtrl = /** @class */ (function () {
         this.hitGroup = group;
         this.svgElement.getElementById('hits').appendChild(group);
     };
+    /*private drawHits(hitCoordinates: { x: number, y: number }[]): void {
+        while (this.hitGroup.firstChild) { this.hitGroup.removeChild(this.hitGroup.firstChild); }
+
+        hitCoordinates.forEach((v) => {
+            var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
+            hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
+            hit.setAttribute('transform', 'translate(' + v.x.toString() + ',' + v.y.toString() + ') scale(0.1,0.1)');
+            this.hitGroup.appendChild(hit);
+        });
+    }*/
     TargetCtrl.prototype.drawHits = function (hitCoordinates) {
         var _this = this;
         while (this.hitGroup.firstChild) {
@@ -138,7 +160,7 @@ var TargetCtrl = /** @class */ (function () {
         hitCoordinates.forEach(function (v) {
             var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
             hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
-            hit.setAttribute('transform', 'translate(' + v.x.toString() + ',' + v.y.toString() + ') scale(0.1,0.1)');
+            hit.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
             _this.hitGroup.appendChild(hit);
         });
     };
