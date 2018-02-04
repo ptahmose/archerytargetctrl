@@ -34,9 +34,9 @@ var ShotResultTable = /** @class */ (function () {
         shots.forEach(function (element) {
             var row = _this.element.insertRow(-1);
             var dataCell = row.insertCell(-1);
-            dataCell.innerHTML = element.xNormalized + "," + element.yNormalized;
-            dataCell = row.insertCell(-1);
             dataCell.innerHTML = element.score.toString();
+            dataCell = row.insertCell(-1);
+            dataCell.innerHTML = element.xNormalized + "," + element.yNormalized;
         });
     };
     return ShotResultTable;
