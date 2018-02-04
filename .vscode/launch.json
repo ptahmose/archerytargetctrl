@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+//        {
+//           "type": "node",
+//            "request": "launch",
+//            "name": "Launch Program",
+//            "program": "${workspaceFolder}\\bin\\www"
+//        },
+        {
+        "type": "chrome",
+        "request": "launch",
+        "name": "Launch Chrome against localhost",
+//        "url": "http://localhost:3000/pages/testpage1.html",
+        "url": "http://localhost:3000/pages/testpage2.html",
+//        "file": "${workspaceRoot}/ArcheryTargetControl/public/pages/testpage2.html",
+        "webRoot": "${workspaceRoot}/ArcheryTargetControl/public/", 
+        "sourceMaps": false,
+"breakOnLoad": true,
+            //"trace": "verbose"
+        },
+
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome against file",
+    //        "url": "http://localhost:3000/pages/testpage1.html",
+            //"url": "http://localhost:3000/pages/testpage2.html",
+            "file": "${workspaceRoot}/ArcheryTargetControl/public/pages/testpage2.html",
+            "webRoot": "${workspaceRoot}/ArcheryTargetControl/public/", 
+            "sourceMaps": false,
+    "breakOnLoad": true,
+                //"trace": "verbose"
+            },
+
+        {
+            "name": "Launch index.html (without sourcemaps)",
+            "type": "edge",
+            "request": "launch",
+            "file": "${workspaceRoot}/public/pages/testpage2.html"
+        },
+    ]
+}
