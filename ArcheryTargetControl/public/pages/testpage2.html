@@ -65,8 +65,24 @@
 
     <script>
         window.onload = () => {
+
+            var el = document.getElementById('myCanvas');
+            var svg = document.getElementById('mySvg');
+
+
+            var div = document.getElementById('targetDiv');
+            var w = div.getAttribute('width');
+            var h = div.getAttribute('height');
+            svg.setAttribute('width', w + 'px');
+            svg.setAttribute('height', h + 'px');
+            svg.style.width = w + 'px';
+            svg.style.height = h + 'px';
+            el.setAttribute('width', w + 'px');
+            el.setAttribute('height', h + 'px');
+
+
             targetControl.initialize('myCanvas','mySvg');
-           // alert("HELLO");
+            // alert("HELLO");
         }
     </script>
 

@@ -32,7 +32,7 @@
             //"url": "http://localhost:3000/pages/testpage2.html",
             "file": "${workspaceRoot}/ArcheryTargetControl/public/pages/testpage2.html",
             "webRoot": "${workspaceRoot}/ArcheryTargetControl/public/", 
-            "sourceMaps": false,
+            "sourceMaps": true,
     "breakOnLoad": true,
                 //"trace": "verbose"
             },

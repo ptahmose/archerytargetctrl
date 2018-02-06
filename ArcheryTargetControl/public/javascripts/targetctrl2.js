@@ -14,6 +14,10 @@ var targetControl = (function()
     // 1 : MouseInteractionState.OutOfElement
     var mCurMouseInteractionState=0;
 
+    var mBackupElement;
+    var mHitGroup;
+    var mShotPositions;
+
     // public
     var initialize = function(idOfCanvasElement, idOfSVGElement){
         var canvas = document.getElementById(idOfCanvasElement);
@@ -24,9 +28,40 @@ var targetControl = (function()
         var ctx = mElement.getContext("2d");
         ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
         paintTarget(ctx);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        mBackupElement = document.createElement("canvas");
+        mBackupElement.width = getCanvasWidth();//this.canvasWidth;
+        mBackupElement.height = getCanvasHeight();//this.canvasHeight;
+        var ctxBackup = mBackupElement.getContext("2d");
+        ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
+
+        insertHitsGroup();
+        var h = [new Shot( 0.25, 0.25,6),new Shot(0.25, 0.75,7), new Shot( 0.75, 0.25,6), new Shot( 0.75,0.75,6),new Shot( 0.5, 0.5,10)];
+        mShotPositions = h;
+        drawHits(h);
     }
 
     // private
+    var insertHitsGroup=function(){
+        var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+        //group.setAttribute('transform', 'scale(1024,1024)');
+        group.setAttribute('transform', 'scale(' +  getCanvasWidth() + ',' + getCanvasWidth() + ')');
+        mHitGroup = group;
+        mSvgElement.getElementById('hits').appendChild(group);
+    }
+
+    var drawHits=function(hitCoordinates){
+        while (mHitGroup.firstChild) { mHitGroup.removeChild(mHitGroup.firstChild); }
+
+        hitCoordinates.forEach((v) => {
+            var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
+            hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
+            hit.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
+            mHitGroup.appendChild(hit);
+        });
+    }
+
     var setupEvents=function(){
         mElement.addEventListener("mousedown",onMouseDownHandler);
         mElement.addEventListener("mouseup",onMouseUpHandler);
@@ -107,8 +142,8 @@ var targetControl = (function()
         console.log("Touch cancel");
     }
 
-    var getCanvasWidth=function() { return mElement.getCanvasWidth; }
-    var getCanvasHeight=function() { return mElement.getCanvasHeight; }
+    var getCanvasWidth=function() { return mElement.width; }
+    var getCanvasHeight=function() { return mElement.height; }
 
     var paintTarget=function(ctx){
         var canvasInfo=new CanvasInfo(1,1);
@@ -124,8 +159,6 @@ var targetControl = (function()
             }
             paintSegmentTs(ctx, canvasInfo, s.radius, s.radius - s.marginWidth, s.marginColor);
             paintSegmentTs(ctx, canvasInfo, s.radius - s.marginWidth, segmentEndRadius, s.segmentColor);
-            //this.paintSegmentTs(ctx, canvasInfo, s.radius, s.radius - s.marginWidth, s.marginColor);
-            //this.paintSegmentTs(ctx, canvasInfo, s.radius - s.marginWidth, segmentEndRadius, s.segmentColor);
         }
     }
 
@@ -138,10 +171,10 @@ var targetControl = (function()
     var paintSegmentTs=function(ctx, canvasInfo, startRadius, endRadius, color)
     {
         ctx.beginPath();
-        var startRadiusPx = startRadius * canvasInfo.radiusX;
-        var endRadiusPx = endRadius * canvasInfo.radiusX;
+        var startRadiusPx = startRadius * canvasInfo.radiusX();
+        var endRadiusPx = endRadius * canvasInfo.radiusX();
         var middlePx = (startRadiusPx + endRadiusPx) / 2;
-        ctx.arc(canvasInfo.centerX, canvasInfo.centerY, middlePx, 0, 2 * Math.PI);
+        ctx.arc(canvasInfo.centerX(), canvasInfo.centerY(), middlePx, 0, 2 * Math.PI);
         ctx.lineWidth = -endRadiusPx + startRadiusPx;
         ctx.strokeStyle = rgbToHex(color);
         ctx.stroke();
@@ -226,7 +259,15 @@ var targetControl = (function()
         ]; 
     }
 
-    var CanvasInfo=function(width,height){this.width=width;this.height=height;}
+    var CanvasInfo=function(width,height){
+        this.width=width;
+        this.height=height;
+        this.radiusX=function(){return this.width/2;}
+        this.radiusY=function(){return this.height/2;}
+        this.centerX=function(){return this.width/2;}
+        this.centerY=function(){return this.height/2;}
+        
+    }
 
     var TargetSegment=function(radius,marginWidth,text,segmentColor,marginColor,textColor)
     {
@@ -236,6 +277,12 @@ var targetControl = (function()
         this.segmentColor=segmentColor;
         this.marginColor=marginColor;
         this.textColor=textColor;
+    }
+
+    var Shot=function(xNormalized, yNormalized, score){
+        this.xNormalized=xNormalized;
+        this.yNormalized=yNormalized;
+        this.score=score;
     }
 
     return {
