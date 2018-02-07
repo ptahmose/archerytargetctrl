@@ -17,6 +17,15 @@ var targetControl = (function()
     var mBackupElement;
     var mHitGroup;
     var mShotPositions;
+    var mCrosshairElement;
+
+    var mZoomAnimation;
+    var mCurZoom;
+    var mZoomCenterPos;
+    var mZoomAnimation;
+
+    var mTimerMouseOfElement;
+    var mLastMousePosNormalized;
 
     // public
     var initialize = function(idOfCanvasElement, idOfSVGElement){
@@ -40,6 +49,8 @@ var targetControl = (function()
         var h = [new Shot( 0.25, 0.25,6),new Shot(0.25, 0.75,7), new Shot( 0.75, 0.25,6), new Shot( 0.75,0.75,6),new Shot( 0.5, 0.5,10)];
         mShotPositions = h;
         drawHits(h);
+
+        mCrosshairElement = mSvgElement.getElementById('crosshairGroup');
     }
 
     // private
@@ -87,34 +98,146 @@ var targetControl = (function()
         }, false);
     }
 
+    var getMousePos=function(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+
+    var runZoomInAnimation=function(ev, startZoom, endZoom, whenDone) {
+        runZoomInAnimation_(getMousePos(mElement, ev), startZoom, endZoom, whenDone);
+    }
+
+    var runZoomInAnimation_=function(zoomCenter, startZoom, endZoom, whenDone)
+    {
+        mZoomCenterPos = zoomCenter;
+        mZoomAnimation = $({ xyz: startZoom });
+        mZoomAnimation.animate(
+            { xyz: endZoom },
+            {
+                duration: 150,
+                step: function(now, fx)  {
+                    //console.log("anim now " + now);
+                    var ctx = mElement.getContext("2d");
+                    setTransform(ctx, mZoomCenterPos.x, mZoomCenterPos.y, now);
+                    ctx.drawImage(mBackupElement, 0, 0, getCanvasWidth(), getCanvasHeight());
+
+                    setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, now);
+
+                    mCurZoom = now;
+                },
+                complete: function(now, fx)  {
+                    var ctx = mElement.getContext("2d");
+                    drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, endZoom);
+
+                    setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, endZoom);
+
+                    mCurZoom = endZoom;
+                    mZoomAnimation = null;
+                    if (mCurZoom == 1) {
+                        mZoomCenterPos = null;
+                    }
+                },
+                always: function(now, jumpedToEnd) {
+                    console.log("I am in always " + now + " " + jumpedToEnd);
+                    if (whenDone != null) whenDone();
+                }
+            });
+    }
+
     var onMouseDownHandler=function(ev)
     {
+        if (mCurInteractionMode==0/*invalid*/)
+        {
+            if (mZoomAnimation!=null)
+            {
+              mZoomAnimation.stop();  
+            }
+
+            runZoomInAnimation(ev,mCurZoom,0.1);
+            mCurInteractionMode = 1 /*InteractionMode.Mouse*/;
+        }
+        ev.preventDefault();
         console.log("Down");
     }
 
     var onMouseUpHandler=function(ev)
     {
-        console.log("Up");
+        if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
+            if (mZoomAnimation != null) {
+                mZoomAnimation.stop();
+            }
+
+            var pos = getMousePosNormalized(mElement, ev);
+            var posTransformed = transformToUnzoomedNormalized(pos);
+            addShot(posTransformed.x, posTransformed.y);
+            runZoomInAnimation(ev, mCurZoom, 1,
+                function(){mCurInteractionMode= 0/*InteractionMode.Invalid*/;});
+        }
     }
 
     var onMouseMoveHandler=function(ev)
     {
-        console.log("Move");
+        ev.preventDefault();
+        if (mCurInteractionMode == 1/*InteractionMode.Mouse*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
+            var pos = getMousePos(mElement, ev);
+
+            var transX = (pos.x - getCanvasWidth() / 2) / getCanvasWidth();
+            var transY = (pos.y - getCanvasHeight() / 2) / getCanvasHeight();
+            mCrosshairElement.setAttribute(
+                'transform',
+                'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ') translate(' + transX + ',' + transY + ') ');
+        }
+
+        if (mTimerMouseOfElement != null) {
+            window.clearInterval(mTimerMouseOfElement);
+            mTimerMouseOfElement = null;
+        }
+
+        mLastMousePosNormalized = null;
+        mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
     }
 
     var onMouseOutHandler=function(ev)
     {
-        console.log("Out");
+        if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
+            mCurMouseInteractionState = 1/*MouseInteractionState.OutOfElement*/;
+        }
     }
 
     var onMouseUpWindow=function(ev)
     {
-        console.log("Up (Window)");
+        if (mCurMouseInteractionState == 1/*MouseInteractionState.OutOfElement*/ && mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
+            if (mZoomAnimation != null) {
+                mZoomAnimation.stop();
+            }
+
+            mLastMousePosNormalized = null;
+            mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
+            if (mTimerMouseOfElement != null) {
+                window.clearInterval(mTimerMouseOfElement);
+                mTimerMouseOfElement = null;
+            }
+
+            runZoomInAnimation(ev, this.curZoom, 1,
+                function(){mCurInteractionMode = 0/*InteractionMode.Invalid*/;});
+        }
     }
 
     var onMouseMoveWindow=function(ev)
     {
-        console.log("Move (Window)");
+        if (mCurMouseInteractionState == 1/*MouseInteractionState.OutOfElement*/) {
+            if (mTimerMouseOfElement == null) {
+                mTimerMouseOfElement = window.setInterval(
+                    function(){onTimerMouseOutOfElement();},1000/ 10 /*TargetCtrl.FpsForTimerOutOfElement*/);
+                   // () => { this.OnTimerMouseOutOfElement(); }, 1000 / TargetCtrl.FpsForTimerOutOfElement);
+            }
+
+            var pos = getMousePosNormalized(mElement, ev);
+            mLastMousePosNormalized = pos;
+        }
     }
 
     var onKeyDownWindow=function(ev)
@@ -266,7 +389,116 @@ var targetControl = (function()
         this.radiusY=function(){return this.height/2;}
         this.centerX=function(){return this.width/2;}
         this.centerY=function(){return this.height/2;}
+    }
+
+    var setTransform=function(ctx, centerX, centerY, zoom){
+        zoom = 1 / zoom;
+
+        // calculate the coordinate of the center of the scaled rectangle
+        var xP = (getCanvasWidth() * zoom) / 2;
+        var yP = (getCanvasHeight() * zoom) / 2;
+
+        var distX = (getCanvasWidth() / 2) - centerX;
+        var distY = (getCanvasHeight() / 2) - centerY;
+
+        // and now we need to translate (xP,yP) to the center
+        var xDiff = xP - centerX;
+        var yDiff = yP - centerY;
+
+        xDiff -= distX * zoom;
+        yDiff -= distY * zoom;
+
+        ctx.setTransform(zoom, 0, 0, zoom, -xDiff, -yDiff);
+    }
+
+    var setHitGraphicsTransform=function(centerX, centerY, zoom) {
+        zoom = 1 / zoom;
+
+        // calculate the coordinate of the center of the scaled rectangle
+        var xP = (getCanvasWidth() * zoom) / 2;
+        var yP = (getCanvasHeight() * zoom) / 2;
+
+        var distX = (getCanvasWidth() / 2) - centerX;
+        var distY = (getCanvasHeight() / 2) - centerY;
+
+        // and now we need to translate (xP,yP) to the center
+        var xDiff = xP - centerX;
+        var yDiff = yP - centerY;
+
+        xDiff -= distX * zoom;
+        yDiff -= distY * zoom;
+
+        var scale = 1 / zoom;
+        var xx = getCanvasWidth() / 2 * zoom - ((getCanvasWidth() / 2) );
+        var yy = getCanvasHeight() / 2 * zoom - ((getCanvasHeight() / 2) );
+
+        var wx = getCanvasWidth() * zoom;
+        var wy = getCanvasHeight() * zoom;
+
+        var xx1 = (centerX / getCanvasWidth()) * wx - centerX;
+        var yy1 = (centerY / getCanvasHeight()) * wy - centerY;
+
+        var t = 'translate(' + (-xx1) + ',' + (-yy1) + ') scale(' + wx + ',' + wy + ')  ';
+      
+        mHitGroup.setAttribute('transform', t);
+    }
+
+    var drawZoomed=function(ctx, centerX, centerY, zoom) {
+        var xDiff = centerX / zoom - centerX;
+        var yDiff = centerY / zoom - centerY;
+        ctx.setTransform(getCanvasWidth() / zoom, 0, 0, getCanvasHeight() / zoom, -xDiff, -yDiff);
+        paintTarget(ctx);
+    }
+
+    var getMousePosNormalized=function(canvas, evt) {
+        var pos = getMousePos(canvas, evt);
+        return { x: pos.x / getCanvasWidth(), y: pos.y / getCanvasHeight() };
+    }
+
+    var transformToUnzoomedNormalized=function(pos) {
+        if (mCurZoom == 1 || mZoomCenterPos == null) {
+            return pos;
+        }
+
+        var posAbs = deNormalize(pos);
+        var diff = { dx: (posAbs.x - mZoomCenterPos.x) * mCurZoom, dy: (posAbs.y - mZoomCenterPos.y) * mCurZoom };
+        var pos2 = { x: mZoomCenterPos.x + diff.dx, y: mZoomCenterPos.y + diff.dy };
+        var posNormalized = normalize(pos2);
+        return posNormalized;
+    }
+
+    var normalize=function(pos){
+        return { x: pos.x / getCanvasWidth(), y: pos.y / getCanvasHeight() };
+    }
+
+    var deNormalize=function(pos){
+        return { x: pos.x * getCanvasWidth(), y: pos.y *  getCanvasHeight() };
+    }
+
+    var addShot=function(x, y){
+        mShotPositions.push(new Shot( x, y,2));
+        drawHits(mShotPositions);
         
+        /*if (this._hitsChangedEvent != null) {
+            this._hitsChangedEvent(this, 42);
+        }*/
+    }
+
+    var onTimerMouseOutOfElement=function() {
+        if (mLastMousePosNormalized == null || mCurInteractionMode != 1/*InteractionMode.Mouse*/) { return; }
+        var dir = { x: 2 * (mLastMousePosNormalized.x - 0.5), y: 2 * (mLastMousePosNormalized.y - 0.5) };
+        var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+        dir = { x: dir.x / l, y: dir.y / l };
+
+        var sx = 0.1/*TargetCtrl.ScrollSpeed*/ * getCanvasWidth() / 10/*TargetCtrl.FpsForTimerOutOfElement*/;
+        var sy = 0.1/*TargetCtrl.ScrollSpeed*/ * getCanvasHeight() / 10/*TargetCtrl.FpsForTimerOutOfElement*/;
+
+        mZoomCenterPos.x += dir.x * sx/*5*/;
+        mZoomCenterPos.y += dir.y * sy/*5*/;
+        var ctx = mElement.getContext("2d");
+
+        drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+        setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
 
     var TargetSegment=function(radius,marginWidth,text,segmentColor,marginColor,textColor)

@@ -103,13 +103,12 @@ var TargetCtrl = /** @class */ (function () {
         this.backupElement.height = this.canvasHeight;
         var ctxBackup = this.backupElement.getContext("2d");
         ctxBackup.drawImage(this.element, 0, 0, this.canvasWidth, this.canvasHeight);
-        /* this.insertHitsGroup();
-         //var h = [{ x: 0.25, y: 0.25 }, { x: 0.25, y: 0.75 }, { x: 0.75, y: 0.25 }, { x: 0.75, y: 0.75 }, { x: 0.5, y: 0.5 }];
-         var h = [new Shot( 0.25, 0.25,6),new Shot(0.25, 0.75,7), new Shot( 0.75, 0.25,6), new Shot( 0.75,0.75,6),new Shot( 0.5, 0.5,10)];
-         this.shotPositions = h;
-         this.drawHits(h);
- 
-         this.crosshairElement = <SVGGElement>this.svgElement.getElementById('crosshairGroup');*/
+        this.insertHitsGroup();
+        //var h = [{ x: 0.25, y: 0.25 }, { x: 0.25, y: 0.75 }, { x: 0.75, y: 0.25 }, { x: 0.75, y: 0.75 }, { x: 0.5, y: 0.5 }];
+        var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
+        this.shotPositions = h;
+        this.drawHits(h);
+        this.crosshairElement = this.svgElement.getElementById('crosshairGroup');
     }
     TargetCtrl.prototype.SetHitsChangedCallback = function (fc) {
         this._hitsChangedEvent = fc;
