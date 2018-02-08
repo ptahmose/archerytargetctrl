@@ -27,6 +27,9 @@ var targetControl = (function()
     var mTimerMouseOfElement;
     var mLastMousePosNormalized;
 
+    const FPS_FOR_TIMER_OUTOFELEMENT = 10;
+    const SCROLL_SPEED= 0.1;
+
     // public
     var initialize = function(idOfCanvasElement, idOfSVGElement){
         var canvas = document.getElementById(idOfCanvasElement);
@@ -56,7 +59,6 @@ var targetControl = (function()
     // private
     var insertHitsGroup=function(){
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        //group.setAttribute('transform', 'scale(1024,1024)');
         group.setAttribute('transform', 'scale(' +  getCanvasWidth() + ',' + getCanvasWidth() + ')');
         mHitGroup = group;
         mSvgElement.getElementById('hits').appendChild(group);
@@ -231,8 +233,7 @@ var targetControl = (function()
         if (mCurMouseInteractionState == 1/*MouseInteractionState.OutOfElement*/) {
             if (mTimerMouseOfElement == null) {
                 mTimerMouseOfElement = window.setInterval(
-                    function(){onTimerMouseOutOfElement();},1000/ 10 /*TargetCtrl.FpsForTimerOutOfElement*/);
-                   // () => { this.OnTimerMouseOutOfElement(); }, 1000 / TargetCtrl.FpsForTimerOutOfElement);
+                    function(){onTimerMouseOutOfElement();},1000/ FPS_FOR_TIMER_OUTOFELEMENT);
             }
 
             var pos = getMousePosNormalized(mElement, ev);
@@ -242,27 +243,75 @@ var targetControl = (function()
 
     var onKeyDownWindow=function(ev)
     {
-        console.log("Keydown (Window)");
+        if (ev.keyCode == 27 || ev.keyCode == 8) {
+            if (mCurInteractionMode != 0/*InteractionMode.Invalid*/) {
+                cancelZoomAddArrowOperation();
+            }
+        }
+        else if (ev.keyCode == 40)    // key down
+        {
+            mZoomCenterPos.y += 20;
+            var ctx = this.element.getContext("2d");
+            drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, 0.1);
+        }
+    }
+
+    var cancelZoomAddArrowOperation=function(){
+        if (mZoomAnimation != null) {
+            mZoomAnimation.stop();
+        }
+
+        runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
     }
 
     var onTouchStart=function(ev)
     {
-        console.log("Touch start");
+        ev.preventDefault();
+
+        if (this.curInteractionMode == 0/*InteractionMode.Invalid*/) {
+            if (mZoomAnimation != null) {
+                mZoomAnimation.stop();
+            }
+
+            var rect = mElement.getBoundingClientRect();
+            var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            mCrosshairElement.setAttribute('transform',
+                'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
+
+
+            runZoomInAnimation_(pos, mCurZoom, 0.1);
+            mCurInteractionMode = 2/*InteractionMode.Touch*/;
+        }
     }
 
     var onTouchMove=function(ev)
     {
-        console.log("Touch move");
+        if (this.curInteractionMode == 2/*InteractionMode.Touch*/ || this.curInteractionMode == 0/*InteractionMode.Invalid*/) {
+            var rect = mElement.getBoundingClientRect();
+            var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            mCrosshairElement.setAttribute('transform',
+                'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
+        }
+
+        ev.preventDefault();
     }
 
     var onTouchEnd=function(ev)
     {
-        console.log("Touch end");
+        if (mCurInteractionMode == 2/*InteractionMode.Touch*/) {
+            if (mZoomAnimation != null) {
+                mZoomAnimation.stop();
+            }
+
+            runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+        }
+
+        ev.preventDefault();
     }
 
     var onTouchCancel=function(ev)
     {
-        console.log("Touch cancel");
+        //console.log("Touch cancel");
     }
 
     var getCanvasWidth=function() { return mElement.width; }
@@ -385,11 +434,13 @@ var targetControl = (function()
     var CanvasInfo=function(width,height){
         this.width=width;
         this.height=height;
-        this.radiusX=function(){return this.width/2;}
-        this.radiusY=function(){return this.height/2;}
-        this.centerX=function(){return this.width/2;}
-        this.centerY=function(){return this.height/2;}
     }
+
+    CanvasInfo.prototype.radiusX=function(){return this.width/2;}
+    CanvasInfo.prototype.radiusY=function(){return this.height/2;}
+    CanvasInfo.prototype.centerX=function(){return this.width/2;}
+    CanvasInfo.prototype.centerY=function(){return this.height/2;}
+
 
     var setTransform=function(ctx, centerX, centerY, zoom){
         zoom = 1 / zoom;
@@ -490,8 +541,8 @@ var targetControl = (function()
         var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
         dir = { x: dir.x / l, y: dir.y / l };
 
-        var sx = 0.1/*TargetCtrl.ScrollSpeed*/ * getCanvasWidth() / 10/*TargetCtrl.FpsForTimerOutOfElement*/;
-        var sy = 0.1/*TargetCtrl.ScrollSpeed*/ * getCanvasHeight() / 10/*TargetCtrl.FpsForTimerOutOfElement*/;
+        var sx = SCROLL_SPEED * getCanvasWidth() / FPS_FOR_TIMER_OUTOFELEMENT;
+        var sy = SCROLL_SPEED * getCanvasHeight() / FPS_FOR_TIMER_OUTOFELEMENT;
 
         mZoomCenterPos.x += dir.x * sx/*5*/;
         mZoomCenterPos.y += dir.y * sy/*5*/;
