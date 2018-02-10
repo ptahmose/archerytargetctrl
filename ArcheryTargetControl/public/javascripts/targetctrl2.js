@@ -27,6 +27,9 @@ var targetControl = (function()
     var mTimerMouseOfElement;
     var mLastMousePosNormalized;
 
+    var mLastTimeNormalizedTouchPos;
+    var mTimerTouchOutOfElement;
+
     const FPS_FOR_TIMER_OUTOFELEMENT = 10;
     const SCROLL_SPEED= 0.1;
 
@@ -273,13 +276,14 @@ var targetControl = (function()
                 mZoomAnimation.stop();
             }
 
-            var rect = mElement.getBoundingClientRect();
-            var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            //var rect = mElement.getBoundingClientRect();
+            //var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            var pos =getOffsetedTouchPos(ev);
             mCrosshairElement.setAttribute('transform',
                 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
 
 
-            runZoomInAnimation_(pos, mCurZoom, 0.1);
+            runZoomInAnimation_({x:pos.x,y:pos.y+getTouchOffset()*(1+0.1)}, mCurZoom, 0.1);
             mCurInteractionMode = 2/*InteractionMode.Touch*/;
         }
     }
@@ -287,13 +291,101 @@ var targetControl = (function()
     var onTouchMove=function(ev)
     {
         if (mCurInteractionMode == 2/*InteractionMode.Touch*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
-            var rect = mElement.getBoundingClientRect();
-            var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            //var rect = mElement.getBoundingClientRect();
+            //var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+            var pos =getOffsetedTouchPosAndNormalizedPos(ev);
+
+            console.log("x:"+pos[1].x+" y:"+pos[1].y);
             mCrosshairElement.setAttribute('transform',
-                'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
+                'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos[0].x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos[0].y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
+
+           /* if (pos[1].x > 0.45 || pos[1].x<-0.45 || pos[1].y>0.45||pos[1].y<-0.45)                
+            {
+                var dir = { x: 2 * (pos[1].x ), y: 2 * (pos[1].y ) };
+                var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+                dir = { x: dir.x / l, y: dir.y / l };
+
+                mZoomCenterPos.x += dir.x*5;
+                mZoomCenterPos.y += dir.y*5;
+                var ctx = mElement.getContext("2d");
+        
+                drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+                setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+
+                mLastTimeNormalizedTouchPos=pos[1];
+                if (mTimerTouchOutOfElement==null)
+                {
+                    mTimerTouchOutOfElement=window.setInterval(onTouchAtEdgesOrOutOfElement,1000/10);
+                }
+            }*/
+            if (updatePositionBasedOnNormalizedTouchPos(pos[1]))
+            {
+                mLastTimeNormalizedTouchPos=pos[1];
+                if (mTimerTouchOutOfElement==null)
+                {
+                    mTimerTouchOutOfElement=window.setInterval(onTouchAtEdgesOrOutOfElementTimer,1000/10);
+                } 
+            }
+            else
+            {
+                turnOffTouchTimer();
+            }
         }
 
         ev.preventDefault();
+        //console.log("TouchMove "+pos.x+" "+pos.y);
+    }
+
+    var updatePositionBasedOnNormalizedTouchPos=function(pos)
+    {
+        if (pos.x > 0.45 || pos.x<-0.45 || pos.y>0.45||pos.y<-0.45)                
+            {
+                var dir = { x: 2 * (pos.x ), y: 2 * (pos.y ) };
+                var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+                dir = { x: dir.x / l, y: dir.y / l };
+
+                mZoomCenterPos.x += dir.x*5;
+                mZoomCenterPos.y += dir.y*5;
+                var ctx = mElement.getContext("2d");
+        
+                drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+                setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+                return true;
+            }
+            return false;
+    }
+
+    var onTouchAtEdgesOrOutOfElementTimer=function(){
+        if (mLastTimeNormalizedTouchPos!=null)
+        {
+            updatePositionBasedOnNormalizedTouchPos(mLastTimeNormalizedTouchPos);
+        }
+    }
+
+    var getOffsetedTouchPos=function(ev){
+        var rect = mElement.getBoundingClientRect();
+        var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+        return {x:pos.x, y:pos.y-getTouchOffset()};
+    }
+
+    var getOffsetedTouchPosAndNormalizedPos=function(ev){
+        var rect = mElement.getBoundingClientRect();
+        var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
+        var centerPos = {x:rect.width/2,y:rect.height/2};
+        var diff = {x:pos.x-centerPos.x,y:pos.y-centerPos.y};
+        var normalized={x:diff.x/rect.width,y:diff.y/rect.height};
+        return [{x:pos.x, y:pos.y-getTouchOffset()},normalized];
+    }
+
+
+    var getTouchOffset=function(){return 100;}
+
+    var turnOffTouchTimer=function(){
+        if (mTimerTouchOutOfElement!=null){
+            window.clearInterval(mTimerTouchOutOfElement);
+            mTimerTouchOutOfElement=null;
+            mLastTimeNormalizedTouchPos=null;
+        }
     }
 
     var onTouchEnd=function(ev)
@@ -306,11 +398,14 @@ var targetControl = (function()
             runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         }
 
+        turnOffTouchTimer();
+
         ev.preventDefault();
     }
 
     var onTouchCancel=function(ev)
     {
+        turnOffTouchTimer();
         //console.log("Touch cancel");
     }
 
