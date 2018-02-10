@@ -93,6 +93,8 @@ var targetControl = (function()
         mElement.addEventListener("touchend",onTouchEnd);
         mElement.addEventListener("ontouchcancel",onTouchCancel);
 
+        mElement.addEventListener("pointerdown",onPointerDown,false);
+
         mElement.addEventListener("contextmenu", function (e) {
             e.preventDefault();
         }, true);
@@ -425,7 +427,12 @@ var targetControl = (function()
         turnOffTouchTimer();
         //console.log("Touch cancel");
     }
-
+    
+    var onPointerDown=function(ev)
+    {
+        return;
+    }
+    
     var getCanvasWidth=function() { return mElement.width; }
     var getCanvasHeight=function() { return mElement.height; }
 
