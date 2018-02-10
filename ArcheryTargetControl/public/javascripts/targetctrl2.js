@@ -369,12 +369,24 @@ var targetControl = (function()
     }
 
     var getOffsetedTouchPosAndNormalizedPos=function(ev){
+        // the normalized coordinate is in the range -0.5 - 0.5
         var rect = mElement.getBoundingClientRect();
         var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
         var centerPos = {x:rect.width/2,y:rect.height/2};
         var diff = {x:pos.x-centerPos.x,y:pos.y-centerPos.y};
         var normalized={x:diff.x/rect.width,y:diff.y/rect.height};
         return [{x:pos.x, y:pos.y-getTouchOffset()},normalized];
+    }
+
+    var getNormalizedOffsetedTouchHaircrossPosition=function(evTouchList){
+        var rect = mElement.getBoundingClientRect();
+        var pos = { x: evTouchList[0].clientX - rect.left, y: evTouchList[0].clientY - rect.top-getTouchOffset() };
+        var centerPos = {x:rect.width/2,y:rect.height/2};
+        var diff = {x:pos.x-centerPos.x,y:pos.y-centerPos.y};
+        var normalized={x:diff.x/rect.width+0.5,y:diff.y/rect.height+0.5};
+        return normalized;
+        //var coord={x:normalized.x/10+mZoomCenterPos.x/getCanvasWidth(),y:normalized.y/10+mZoomCenterPos.y/getCanvasHeight()};
+        //return coord;
     }
 
 
@@ -400,6 +412,11 @@ var targetControl = (function()
 
         turnOffTouchTimer();
 
+        var pos=getNormalizedOffsetedTouchHaircrossPosition(ev.changedTouches);
+        //var pos = getMousePosNormalized(mElement, ev);
+        var posTransformed = transformToUnzoomedNormalized(pos);
+        //console.log(ev);
+        addShot(posTransformed.x, posTransformed.y);
         ev.preventDefault();
     }
 
