@@ -376,7 +376,12 @@ var targetControl = (function () {
     }
 
 
-    var getTouchOffset = function () { return 100; }
+    var getTouchOffset = function () {
+        if (mCurInteractionMode != 3/*InteractionMode.Stylus*/) {
+            return 0;
+        }
+        return 100;
+    }
 
     var turnOffTouchTimer = function () {
         if (mTimerTouchOutOfElement != null) {
