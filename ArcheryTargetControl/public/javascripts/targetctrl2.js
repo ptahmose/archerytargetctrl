@@ -1,18 +1,17 @@
-var targetControl = (function()
-{
+var targetControl = (function () {
     var mElement;
     var mSvgElement;
     var mCurZoom = 1;
-    
+
     // 0 : InteractionMode.Invalid;
     // 1 : InteractionMode.Mouse
     // 2 : InteractionMode.Touch
     // 3 : InteractionMode.Stylus
-    var mCurInteractionMode=0;
+    var mCurInteractionMode = 0;
 
     // 0 : MouseInteractionState.Invalid
     // 1 : MouseInteractionState.OutOfElement
-    var mCurMouseInteractionState=0;
+    var mCurMouseInteractionState = 0;
 
     var mBackupElement;
     var mHitGroup;
@@ -31,14 +30,14 @@ var targetControl = (function()
     var mTimerTouchOutOfElement;
 
     const FPS_FOR_TIMER_OUTOFELEMENT = 10;
-    const SCROLL_SPEED= 0.1;
+    const SCROLL_SPEED = 0.1;
 
     // public
-    var initialize = function(idOfCanvasElement, idOfSVGElement){
+    var initialize = function (idOfCanvasElement, idOfSVGElement) {
         var canvas = document.getElementById(idOfCanvasElement);
         var svg = document.getElementById(idOfSVGElement);
-        mElement=canvas;
-        mSvgElement=svg;
+        mElement = canvas;
+        mSvgElement = svg;
         setupEvents();
         var ctx = mElement.getContext("2d");
         ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
@@ -52,7 +51,7 @@ var targetControl = (function()
         ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
 
         insertHitsGroup();
-        var h = [new Shot( 0.25, 0.25,6),new Shot(0.25, 0.75,7), new Shot( 0.75, 0.25,6), new Shot( 0.75,0.75,6),new Shot( 0.5, 0.5,10)];
+        var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
         mShotPositions = h;
         drawHits(h);
 
@@ -60,14 +59,14 @@ var targetControl = (function()
     }
 
     // private
-    var insertHitsGroup=function(){
+    var insertHitsGroup = function () {
         var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
-        group.setAttribute('transform', 'scale(' +  getCanvasWidth() + ',' + getCanvasWidth() + ')');
+        group.setAttribute('transform', 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ')');
         mHitGroup = group;
         mSvgElement.getElementById('hits').appendChild(group);
     }
 
-    var drawHits=function(hitCoordinates){
+    var drawHits = function (hitCoordinates) {
         while (mHitGroup.firstChild) { mHitGroup.removeChild(mHitGroup.firstChild); }
 
         hitCoordinates.forEach((v) => {
@@ -78,22 +77,22 @@ var targetControl = (function()
         });
     }
 
-    var setupEvents=function(){
-        mElement.addEventListener("mousedown",onMouseDownHandler);
-        mElement.addEventListener("mouseup",onMouseUpHandler);
-        mElement.addEventListener("mousemove",onMouseMoveHandler);
-        mElement.addEventListener("mouseout",onMouseOutHandler);
+    var setupEvents = function () {
+        mElement.addEventListener("mousedown", onMouseDownHandler);
+        mElement.addEventListener("mouseup", onMouseUpHandler);
+        mElement.addEventListener("mousemove", onMouseMoveHandler);
+        mElement.addEventListener("mouseout", onMouseOutHandler);
 
         window.addEventListener("mouseup", onMouseUpWindow);
         window.addEventListener("mousemove", onMouseMoveWindow);
         window.addEventListener("keydown", onKeyDownWindow);
 
-        mElement.addEventListener("touchstart",onTouchStart);
-        mElement.addEventListener("touchmove",onTouchMove);
-        mElement.addEventListener("touchend",onTouchEnd);
-        mElement.addEventListener("ontouchcancel",onTouchCancel);
+        mElement.addEventListener("touchstart", onTouchStart);
+        mElement.addEventListener("touchmove", onTouchMove);
+        mElement.addEventListener("touchend", onTouchEnd);
+        mElement.addEventListener("ontouchcancel", onTouchCancel);
 
-        mElement.addEventListener("pointerdown",onPointerDown,false);
+        mElement.addEventListener("pointerdown", onPointerDown, false);
 
         mElement.addEventListener("contextmenu", function (e) {
             e.preventDefault();
@@ -105,7 +104,7 @@ var targetControl = (function()
         }, false);
     }
 
-    var getMousePos=function(canvas, evt) {
+    var getMousePos = function (canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         return {
             x: evt.clientX - rect.left,
@@ -113,19 +112,18 @@ var targetControl = (function()
         };
     }
 
-    var runZoomInAnimation=function(ev, startZoom, endZoom, whenDone) {
+    var runZoomInAnimation = function (ev, startZoom, endZoom, whenDone) {
         runZoomInAnimation_(getMousePos(mElement, ev), startZoom, endZoom, whenDone);
     }
 
-    var runZoomInAnimation_=function(zoomCenter, startZoom, endZoom, whenDone)
-    {
+    var runZoomInAnimation_ = function (zoomCenter, startZoom, endZoom, whenDone) {
         mZoomCenterPos = zoomCenter;
         mZoomAnimation = $({ xyz: startZoom });
         mZoomAnimation.animate(
             { xyz: endZoom },
             {
                 duration: 150,
-                step: function(now, fx)  {
+                step: function (now, fx) {
                     //console.log("anim now " + now);
                     var ctx = mElement.getContext("2d");
                     setTransform(ctx, mZoomCenterPos.x, mZoomCenterPos.y, now);
@@ -135,7 +133,7 @@ var targetControl = (function()
 
                     mCurZoom = now;
                 },
-                complete: function(now, fx)  {
+                complete: function (now, fx) {
                     var ctx = mElement.getContext("2d");
                     drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, endZoom);
 
@@ -147,31 +145,27 @@ var targetControl = (function()
                         mZoomCenterPos = null;
                     }
                 },
-                always: function(now, jumpedToEnd) {
+                always: function (now, jumpedToEnd) {
                     console.log("I am in always " + now + " " + jumpedToEnd);
                     if (whenDone != null) whenDone();
                 }
             });
     }
 
-    var onMouseDownHandler=function(ev)
-    {
-        if (mCurInteractionMode==0/*invalid*/)
-        {
-            if (mZoomAnimation!=null)
-            {
-              mZoomAnimation.stop();  
+    var onMouseDownHandler = function (ev) {
+        if (mCurInteractionMode == 0/*invalid*/ || mCurInteractionMode == 1) {
+            if (mZoomAnimation != null) {
+                mZoomAnimation.stop();
             }
 
-            runZoomInAnimation(ev,mCurZoom,0.1);
+            runZoomInAnimation(ev, mCurZoom, 0.1);
             mCurInteractionMode = 1 /*InteractionMode.Mouse*/;
         }
         ev.preventDefault();
         console.log("Down");
     }
 
-    var onMouseUpHandler=function(ev)
-    {
+    var onMouseUpHandler = function (ev) {
         if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
             if (mZoomAnimation != null) {
                 mZoomAnimation.stop();
@@ -181,12 +175,11 @@ var targetControl = (function()
             var posTransformed = transformToUnzoomedNormalized(pos);
             addShot(posTransformed.x, posTransformed.y);
             runZoomInAnimation(ev, mCurZoom, 1,
-                function(){mCurInteractionMode= 0/*InteractionMode.Invalid*/;});
+                function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         }
     }
 
-    var onMouseMoveHandler=function(ev)
-    {
+    var onMouseMoveHandler = function (ev) {
         ev.preventDefault();
         if (mCurInteractionMode == 1/*InteractionMode.Mouse*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
             var pos = getMousePos(mElement, ev);
@@ -207,15 +200,13 @@ var targetControl = (function()
         mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
     }
 
-    var onMouseOutHandler=function(ev)
-    {
+    var onMouseOutHandler = function (ev) {
         if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
             mCurMouseInteractionState = 1/*MouseInteractionState.OutOfElement*/;
         }
     }
 
-    var onMouseUpWindow=function(ev)
-    {
+    var onMouseUpWindow = function (ev) {
         if (mCurMouseInteractionState == 1/*MouseInteractionState.OutOfElement*/ && mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
             if (mZoomAnimation != null) {
                 mZoomAnimation.stop();
@@ -229,16 +220,15 @@ var targetControl = (function()
             }
 
             runZoomInAnimation(ev, this.curZoom, 1,
-                function(){mCurInteractionMode = 0/*InteractionMode.Invalid*/;});
+                function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         }
     }
 
-    var onMouseMoveWindow=function(ev)
-    {
+    var onMouseMoveWindow = function (ev) {
         if (mCurMouseInteractionState == 1/*MouseInteractionState.OutOfElement*/) {
             if (mTimerMouseOfElement == null) {
                 mTimerMouseOfElement = window.setInterval(
-                    function(){onTimerMouseOutOfElement();},1000/ FPS_FOR_TIMER_OUTOFELEMENT);
+                    function () { onTimerMouseOutOfElement(); }, 1000 / FPS_FOR_TIMER_OUTOFELEMENT);
             }
 
             var pos = getMousePosNormalized(mElement, ev);
@@ -246,8 +236,7 @@ var targetControl = (function()
         }
     }
 
-    var onKeyDownWindow=function(ev)
-    {
+    var onKeyDownWindow = function (ev) {
         if (ev.keyCode == 27 || ev.keyCode == 8) {
             if (mCurInteractionMode != 0/*InteractionMode.Invalid*/) {
                 cancelZoomAddArrowOperation();
@@ -261,7 +250,7 @@ var targetControl = (function()
         }
     }
 
-    var cancelZoomAddArrowOperation=function(){
+    var cancelZoomAddArrowOperation = function () {
         if (mZoomAnimation != null) {
             mZoomAnimation.stop();
         }
@@ -269,67 +258,65 @@ var targetControl = (function()
         runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
     }
 
-    var onTouchStart=function(ev)
-    {
+    var onTouchStart = function (ev) {
         ev.preventDefault();
 
-        if (mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
+        if (mCurInteractionMode == 0/*InteractionMode.Invalid*/ || mCurInteractionMode == 3 || mCurInteractionMode == 2) {
             if (mZoomAnimation != null) {
                 mZoomAnimation.stop();
             }
 
+            // set the interaction-mode only in case it wasn't previously set by "onPointerDown"
+            if (mCurInteractionMode == 0) {
+                mCurInteractionMode = 2/*InteractionMode.Touch*/;
+            }
+
             //var rect = mElement.getBoundingClientRect();
             //var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
-            var pos =getOffsetedTouchPos(ev);
+            var pos = getOffsetedTouchPos(ev);
             mCrosshairElement.setAttribute('transform',
                 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
 
-
-            runZoomInAnimation_({x:pos.x,y:pos.y+getTouchOffset()*(1+0.1)}, mCurZoom, 0.1);
-            mCurInteractionMode = 2/*InteractionMode.Touch*/;
+            runZoomInAnimation_({ x: pos.x, y: pos.y + getTouchOffset() * (1 + 0.1) }, mCurZoom, 0.1);
         }
     }
 
-    var onTouchMove=function(ev)
-    {
+    var onTouchMove = function (ev) {
         if (mCurInteractionMode == 2/*InteractionMode.Touch*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
             //var rect = mElement.getBoundingClientRect();
             //var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
-            var pos =getOffsetedTouchPosAndNormalizedPos(ev);
+            var pos = getOffsetedTouchPosAndNormalizedPos(ev);
 
-            console.log("x:"+pos[1].x+" y:"+pos[1].y);
+            console.log("x:" + pos[1].x + " y:" + pos[1].y);
             mCrosshairElement.setAttribute('transform',
                 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos[0].x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos[0].y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
 
-           /* if (pos[1].x > 0.45 || pos[1].x<-0.45 || pos[1].y>0.45||pos[1].y<-0.45)                
-            {
-                var dir = { x: 2 * (pos[1].x ), y: 2 * (pos[1].y ) };
-                var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
-                dir = { x: dir.x / l, y: dir.y / l };
-
-                mZoomCenterPos.x += dir.x*5;
-                mZoomCenterPos.y += dir.y*5;
-                var ctx = mElement.getContext("2d");
-        
-                drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
-                setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
-
-                mLastTimeNormalizedTouchPos=pos[1];
-                if (mTimerTouchOutOfElement==null)
-                {
-                    mTimerTouchOutOfElement=window.setInterval(onTouchAtEdgesOrOutOfElement,1000/10);
+            /* if (pos[1].x > 0.45 || pos[1].x<-0.45 || pos[1].y>0.45||pos[1].y<-0.45)                
+             {
+                 var dir = { x: 2 * (pos[1].x ), y: 2 * (pos[1].y ) };
+                 var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+                 dir = { x: dir.x / l, y: dir.y / l };
+ 
+                 mZoomCenterPos.x += dir.x*5;
+                 mZoomCenterPos.y += dir.y*5;
+                 var ctx = mElement.getContext("2d");
+         
+                 drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+                 setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+ 
+                 mLastTimeNormalizedTouchPos=pos[1];
+                 if (mTimerTouchOutOfElement==null)
+                 {
+                     mTimerTouchOutOfElement=window.setInterval(onTouchAtEdgesOrOutOfElement,1000/10);
+                 }
+             }*/
+            if (updatePositionBasedOnNormalizedTouchPos(pos[1])) {
+                mLastTimeNormalizedTouchPos = pos[1];
+                if (mTimerTouchOutOfElement == null) {
+                    mTimerTouchOutOfElement = window.setInterval(onTouchAtEdgesOrOutOfElementTimer, 1000 / 10);
                 }
-            }*/
-            if (updatePositionBasedOnNormalizedTouchPos(pos[1]))
-            {
-                mLastTimeNormalizedTouchPos=pos[1];
-                if (mTimerTouchOutOfElement==null)
-                {
-                    mTimerTouchOutOfElement=window.setInterval(onTouchAtEdgesOrOutOfElementTimer,1000/10);
-                } 
             }
-            else
-            {
+            else {
                 turnOffTouchTimer();
             }
         }
@@ -338,73 +325,73 @@ var targetControl = (function()
         //console.log("TouchMove "+pos.x+" "+pos.y);
     }
 
-    var updatePositionBasedOnNormalizedTouchPos=function(pos)
-    {
-        if (pos.x > 0.45 || pos.x<-0.45 || pos.y>0.45||pos.y<-0.45)                
-            {
-                var dir = { x: 2 * (pos.x ), y: 2 * (pos.y ) };
-                var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
-                dir = { x: dir.x / l, y: dir.y / l };
+    var updatePositionBasedOnNormalizedTouchPos = function (pos) {
+        if (pos.x > 0.45 || pos.x < -0.45 || pos.y > 0.45 || pos.y < -0.45) {
+            var dir = { x: 2 * (pos.x), y: 2 * (pos.y) };
+            var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+            dir = { x: dir.x / l, y: dir.y / l };
 
-                mZoomCenterPos.x += dir.x*5;
-                mZoomCenterPos.y += dir.y*5;
-                var ctx = mElement.getContext("2d");
-        
-                drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
-                setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
-                return true;
-            }
-            return false;
+            mZoomCenterPos.x += dir.x * 5;
+            mZoomCenterPos.y += dir.y * 5;
+            var ctx = mElement.getContext("2d");
+
+            drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+            setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
+            return true;
+        }
+        return false;
     }
 
-    var onTouchAtEdgesOrOutOfElementTimer=function(){
-        if (mLastTimeNormalizedTouchPos!=null)
-        {
+    var onTouchAtEdgesOrOutOfElementTimer = function () {
+        if (mLastTimeNormalizedTouchPos != null) {
             updatePositionBasedOnNormalizedTouchPos(mLastTimeNormalizedTouchPos);
         }
     }
 
-    var getOffsetedTouchPos=function(ev){
+    var getOffsetedTouchPos = function (ev) {
         var rect = mElement.getBoundingClientRect();
         var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
-        return {x:pos.x, y:pos.y-getTouchOffset()};
+        return { x: pos.x, y: pos.y - getTouchOffset() };
     }
 
-    var getOffsetedTouchPosAndNormalizedPos=function(ev){
+    var getOffsetedTouchPosAndNormalizedPos = function (ev) {
         // the normalized coordinate is in the range -0.5 - 0.5
         var rect = mElement.getBoundingClientRect();
         var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
-        var centerPos = {x:rect.width/2,y:rect.height/2};
-        var diff = {x:pos.x-centerPos.x,y:pos.y-centerPos.y};
-        var normalized={x:diff.x/rect.width,y:diff.y/rect.height};
-        return [{x:pos.x, y:pos.y-getTouchOffset()},normalized];
+        var centerPos = { x: rect.width / 2, y: rect.height / 2 };
+        var diff = { x: pos.x - centerPos.x, y: pos.y - centerPos.y };
+        var normalized = { x: diff.x / rect.width, y: diff.y / rect.height };
+        return [{ x: pos.x, y: pos.y - getTouchOffset() }, normalized];
     }
 
-    var getNormalizedOffsetedTouchHaircrossPosition=function(evTouchList){
+    var getNormalizedOffsetedTouchHaircrossPosition = function (evTouchList) {
         var rect = mElement.getBoundingClientRect();
-        var pos = { x: evTouchList[0].clientX - rect.left, y: evTouchList[0].clientY - rect.top-getTouchOffset() };
-        var centerPos = {x:rect.width/2,y:rect.height/2};
-        var diff = {x:pos.x-centerPos.x,y:pos.y-centerPos.y};
-        var normalized={x:diff.x/rect.width+0.5,y:diff.y/rect.height+0.5};
+        var pos = { x: evTouchList[0].clientX - rect.left, y: evTouchList[0].clientY - rect.top - getTouchOffset() };
+        var centerPos = { x: rect.width / 2, y: rect.height / 2 };
+        var diff = { x: pos.x - centerPos.x, y: pos.y - centerPos.y };
+        var normalized = { x: diff.x / rect.width + 0.5, y: diff.y / rect.height + 0.5 };
         return normalized;
         //var coord={x:normalized.x/10+mZoomCenterPos.x/getCanvasWidth(),y:normalized.y/10+mZoomCenterPos.y/getCanvasHeight()};
         //return coord;
     }
 
 
-    var getTouchOffset=function(){return 100;}
+    var getTouchOffset = function () { return 100; }
 
-    var turnOffTouchTimer=function(){
-        if (mTimerTouchOutOfElement!=null){
+    var turnOffTouchTimer = function () {
+        if (mTimerTouchOutOfElement != null) {
             window.clearInterval(mTimerTouchOutOfElement);
-            mTimerTouchOutOfElement=null;
-            mLastTimeNormalizedTouchPos=null;
+            mTimerTouchOutOfElement = null;
+            mLastTimeNormalizedTouchPos = null;
         }
     }
 
-    var onTouchEnd=function(ev)
-    {
-        if (mCurInteractionMode == 2/*InteractionMode.Touch*/) {
+    var onTouchEnd = function (ev) {
+        var zoomInActionWasStillActive = false;
+        if (mZoomAnimation != null) {
+            zoomInActionWasStillActive = true;
+        }
+        if (mCurInteractionMode == 2/*InteractionMode.Touch*/ || mCurInteractionMode == 3/*InteractionMode.Stylus*/) {
             if (mZoomAnimation != null) {
                 mZoomAnimation.stop();
             }
@@ -414,30 +401,58 @@ var targetControl = (function()
 
         turnOffTouchTimer();
 
-        var pos=getNormalizedOffsetedTouchHaircrossPosition(ev.changedTouches);
-        //var pos = getMousePosNormalized(mElement, ev);
-        var posTransformed = transformToUnzoomedNormalized(pos);
-        //console.log(ev);
-        addShot(posTransformed.x, posTransformed.y);
+        // only add the shot if the ZoomIn-operation was complete
+        if (zoomInActionWasStillActive == false) {
+            var pos = getNormalizedOffsetedTouchHaircrossPosition(ev.changedTouches);
+
+            var outOfElement = false;
+            if (pos.x < 0 || pos.x > 1 || pos.y < 0 || pos.y > 1) {
+                outOfElement = true;
+            }
+            //var pos = getMousePosNormalized(mElement, ev);
+            var posTransformed = transformToUnzoomedNormalized(pos);
+            //console.log(ev);
+            if (outOfElement == false) {
+                addShot(posTransformed.x, posTransformed.y);
+            }
+        }
+
         ev.preventDefault();
     }
 
-    var onTouchCancel=function(ev)
-    {
+    var onTouchCancel = function (ev) {
         turnOffTouchTimer();
+        this.cancelZoomAddArrowOperation();
         //console.log("Touch cancel");
     }
-    
-    var onPointerDown=function(ev)
-    {
-        return;
-    }
-    
-    var getCanvasWidth=function() { return mElement.width; }
-    var getCanvasHeight=function() { return mElement.height; }
 
-    var paintTarget=function(ctx){
-        var canvasInfo=new CanvasInfo(1,1);
+    /**
+     * This event (from the "new" HTML5-pointer-API) is used to determine whether a mouse-interaction,
+     * touch- or stylus-interaction is initiated. With touchStart/.. it is impossible to distinguish
+     * stylus from touch, so we rely on this one.
+     * TODO: it seems favorable to use the "new HTML5-pointer API" exclusively (https://developer.mozilla.org/en-US/docs/Web/Events/pointerdown).
+     * @param {any} ev pointer-event
+     * @returns 
+     */
+    var onPointerDown = function (ev) {
+        switch (ev.pointerType) {
+            case "pen":
+                mCurInteractionMode = 3/*InteractionMode.Stylus*/;
+                break;
+            case "touch":
+                mCurInteractionMode = 2/*InteractionMode.Touch*/;
+                break;
+            case "mouse":
+                mCurInteractionMode = 1/*InteractionMode.Touch*/;
+                break;
+        }
+    }
+
+    var getCanvasWidth = function () { return mElement.width; }
+    var getCanvasHeight = function () { return mElement.height; }
+
+    var paintTarget = function (ctx) {
+        var canvasInfo = new CanvasInfo(1, 1);
         var targetSegments = getTargetSegments();
 
         for (var i = 0; i < targetSegments.length; ++i) {
@@ -453,14 +468,12 @@ var targetControl = (function()
         }
     }
 
-    function rgbToHex(rgb)
-    {
+    function rgbToHex(rgb) {
         var rgb = rgb[2] | (rgb[1] << 8) | (rgb[0] << 16);
         return '#' + (0x1000000 + rgb).toString(16).slice(1)
     }
 
-    var paintSegmentTs=function(ctx, canvasInfo, startRadius, endRadius, color)
-    {
+    var paintSegmentTs = function (ctx, canvasInfo, startRadius, endRadius, color) {
         ctx.beginPath();
         var startRadiusPx = startRadius * canvasInfo.radiusX();
         var endRadiusPx = endRadius * canvasInfo.radiusX();
@@ -471,7 +484,7 @@ var targetControl = (function()
         ctx.stroke();
     }
 
-    var getTargetSegments=function(){
+    var getTargetSegments = function () {
         var defaultMarginWidth = 0.01 / 2;
 
         var WhiteSegment = [226, 216, 217];
@@ -484,7 +497,7 @@ var targetControl = (function()
         var WhiteSegmentText = [111, 106, 103];
         var BlackSegmentText = [181, 177, 174];
         var BlueSegmentText = [0, 56, 85];
-        var Black =[0, 0, 0];
+        var Black = [0, 0, 0];
         var White = [255, 255, 255];
         return [
             new TargetSegment(1.0,
@@ -547,21 +560,21 @@ var targetControl = (function()
                 GoldSegment,
                 Black,
                 GoldSegmentText)
-        ]; 
+        ];
     }
 
-    var CanvasInfo=function(width,height){
-        this.width=width;
-        this.height=height;
+    var CanvasInfo = function (width, height) {
+        this.width = width;
+        this.height = height;
     }
 
-    CanvasInfo.prototype.radiusX=function(){return this.width/2;}
-    CanvasInfo.prototype.radiusY=function(){return this.height/2;}
-    CanvasInfo.prototype.centerX=function(){return this.width/2;}
-    CanvasInfo.prototype.centerY=function(){return this.height/2;}
+    CanvasInfo.prototype.radiusX = function () { return this.width / 2; }
+    CanvasInfo.prototype.radiusY = function () { return this.height / 2; }
+    CanvasInfo.prototype.centerX = function () { return this.width / 2; }
+    CanvasInfo.prototype.centerY = function () { return this.height / 2; }
 
 
-    var setTransform=function(ctx, centerX, centerY, zoom){
+    var setTransform = function (ctx, centerX, centerY, zoom) {
         zoom = 1 / zoom;
 
         // calculate the coordinate of the center of the scaled rectangle
@@ -581,7 +594,7 @@ var targetControl = (function()
         ctx.setTransform(zoom, 0, 0, zoom, -xDiff, -yDiff);
     }
 
-    var setHitGraphicsTransform=function(centerX, centerY, zoom) {
+    var setHitGraphicsTransform = function (centerX, centerY, zoom) {
         zoom = 1 / zoom;
 
         // calculate the coordinate of the center of the scaled rectangle
@@ -599,8 +612,8 @@ var targetControl = (function()
         yDiff -= distY * zoom;
 
         var scale = 1 / zoom;
-        var xx = getCanvasWidth() / 2 * zoom - ((getCanvasWidth() / 2) );
-        var yy = getCanvasHeight() / 2 * zoom - ((getCanvasHeight() / 2) );
+        var xx = getCanvasWidth() / 2 * zoom - ((getCanvasWidth() / 2));
+        var yy = getCanvasHeight() / 2 * zoom - ((getCanvasHeight() / 2));
 
         var wx = getCanvasWidth() * zoom;
         var wy = getCanvasHeight() * zoom;
@@ -609,23 +622,23 @@ var targetControl = (function()
         var yy1 = (centerY / getCanvasHeight()) * wy - centerY;
 
         var t = 'translate(' + (-xx1) + ',' + (-yy1) + ') scale(' + wx + ',' + wy + ')  ';
-      
+
         mHitGroup.setAttribute('transform', t);
     }
 
-    var drawZoomed=function(ctx, centerX, centerY, zoom) {
+    var drawZoomed = function (ctx, centerX, centerY, zoom) {
         var xDiff = centerX / zoom - centerX;
         var yDiff = centerY / zoom - centerY;
         ctx.setTransform(getCanvasWidth() / zoom, 0, 0, getCanvasHeight() / zoom, -xDiff, -yDiff);
         paintTarget(ctx);
     }
 
-    var getMousePosNormalized=function(canvas, evt) {
+    var getMousePosNormalized = function (canvas, evt) {
         var pos = getMousePos(canvas, evt);
         return { x: pos.x / getCanvasWidth(), y: pos.y / getCanvasHeight() };
     }
 
-    var transformToUnzoomedNormalized=function(pos) {
+    var transformToUnzoomedNormalized = function (pos) {
         if (mCurZoom == 1 || mZoomCenterPos == null) {
             return pos;
         }
@@ -637,24 +650,24 @@ var targetControl = (function()
         return posNormalized;
     }
 
-    var normalize=function(pos){
+    var normalize = function (pos) {
         return { x: pos.x / getCanvasWidth(), y: pos.y / getCanvasHeight() };
     }
 
-    var deNormalize=function(pos){
-        return { x: pos.x * getCanvasWidth(), y: pos.y *  getCanvasHeight() };
+    var deNormalize = function (pos) {
+        return { x: pos.x * getCanvasWidth(), y: pos.y * getCanvasHeight() };
     }
 
-    var addShot=function(x, y){
-        mShotPositions.push(new Shot( x, y,2));
+    var addShot = function (x, y) {
+        mShotPositions.push(new Shot(x, y, 2));
         drawHits(mShotPositions);
-        
+
         /*if (this._hitsChangedEvent != null) {
             this._hitsChangedEvent(this, 42);
         }*/
     }
 
-    var onTimerMouseOutOfElement=function() {
+    var onTimerMouseOutOfElement = function () {
         if (mLastMousePosNormalized == null || mCurInteractionMode != 1/*InteractionMode.Mouse*/) { return; }
         var dir = { x: 2 * (mLastMousePosNormalized.x - 0.5), y: 2 * (mLastMousePosNormalized.y - 0.5) };
         var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
@@ -671,20 +684,19 @@ var targetControl = (function()
         setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
 
-    var TargetSegment=function(radius,marginWidth,text,segmentColor,marginColor,textColor)
-    {
-        this.radius=radius;
-        this.marginWidth=marginWidth;
-        this.text=text;
-        this.segmentColor=segmentColor;
-        this.marginColor=marginColor;
-        this.textColor=textColor;
+    var TargetSegment = function (radius, marginWidth, text, segmentColor, marginColor, textColor) {
+        this.radius = radius;
+        this.marginWidth = marginWidth;
+        this.text = text;
+        this.segmentColor = segmentColor;
+        this.marginColor = marginColor;
+        this.textColor = textColor;
     }
 
-    var Shot=function(xNormalized, yNormalized, score){
-        this.xNormalized=xNormalized;
-        this.yNormalized=yNormalized;
-        this.score=score;
+    var Shot = function (xNormalized, yNormalized, score) {
+        this.xNormalized = xNormalized;
+        this.yNormalized = yNormalized;
+        this.score = score;
     }
 
     return {
