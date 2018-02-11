@@ -282,7 +282,7 @@ var targetControl = (function () {
     }
 
     var onTouchMove = function (ev) {
-        if (mCurInteractionMode == 2/*InteractionMode.Touch*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
+        if (mCurInteractionMode == 2/*InteractionMode.Touch*/||mCurInteractionMode == 3/*InteractionMode.Style*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
             //var rect = mElement.getBoundingClientRect();
             //var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
             var pos = getOffsetedTouchPosAndNormalizedPos(ev);
