@@ -6,6 +6,7 @@
     <title>Archery-Control (2)</title>
     <script src="../javascripts/lib/jquery.min.js"></script>
     <script src="../javascripts/targetctrl2.js"></script>
+    <script src="../javascripts/resulttable2.js"></script>
 </head>
 
 <body>
@@ -82,7 +83,20 @@
 
 
             targetControl.initialize('myCanvas','mySvg');
+            targetControl.on("hitsChanged",function(){console.log("HITS CHANGED");});
             // alert("HELLO");
+
+            var tableElement = document.getElementById('resultTable');
+            
+            (function(){
+            var table = shotResultTable.initialize(tableElement);
+            //shotResultTable.onTableChanged({});
+            var f = function(targetCtrl){table.onTableChanged(targetCtrl)};
+            targetControl.on("hitsChanged",
+            function(tableChgInfo){shotResultTable.onTableChanged(tableChgInfo);}
+             );
+            }());
+           // (function(targetCtrl){table.onTableChanged(targetCtrl);}){}());
         }
     </script>
 

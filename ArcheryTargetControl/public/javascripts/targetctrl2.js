@@ -32,8 +32,11 @@ var targetControl = (function () {
     const FPS_FOR_TIMER_OUTOFELEMENT = 10;
     const SCROLL_SPEED = 0.1;
 
+    var mHitsChangedHandlers;
+
     // public
     var initialize = function (idOfCanvasElement, idOfSVGElement) {
+        mHitsChangedHandlers = [];
         var canvas = document.getElementById(idOfCanvasElement);
         var svg = document.getElementById(idOfSVGElement);
         mElement = canvas;
@@ -57,6 +60,25 @@ var targetControl = (function () {
 
         mCrosshairElement = mSvgElement.getElementById('crosshairGroup');
     }
+
+    var on = function(eventName, handler) {
+        switch (eventName) {
+          case "hitsChanged":
+            return mHitsChangedHandlers.push(handler);
+          default:
+            return alert('write something for this event :)');
+        }
+      }
+
+      var dispatchHitsChanged = function(arg) {
+        var handler, i, len, ref;
+        ref = mHitsChangedHandlers;
+        for (i = 0, len = ref.length; i < len; i++) {
+          handler = ref[i];
+          setTimeout(handler, 0,arg);
+        }
+      };  
+   
 
     // private
     var insertHitsGroup = function () {
@@ -146,7 +168,7 @@ var targetControl = (function () {
                     }
                 },
                 always: function (now, jumpedToEnd) {
-                    console.log("I am in always " + now + " " + jumpedToEnd);
+                    //console.log("I am in always " + now + " " + jumpedToEnd);
                     if (whenDone != null) whenDone();
                 }
             });
@@ -667,6 +689,7 @@ var targetControl = (function () {
         mShotPositions.push(new Shot(x, y, 2));
         drawHits(mShotPositions);
 
+        dispatchHitsChanged({"targetcontrol":targetControl});
         /*if (this._hitsChangedEvent != null) {
             this._hitsChangedEvent(this, 42);
         }*/
@@ -704,7 +727,13 @@ var targetControl = (function () {
         this.score = score;
     }
 
+    var getShots=function(){
+        return mShotPositions;
+    }
+
     return {
-        initialize: initialize
+        initialize: initialize,
+        on:on,
+        getShots:getShots
     }
 })();
