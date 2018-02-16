@@ -61,24 +61,24 @@ var targetControl = (function () {
         mCrosshairElement = mSvgElement.getElementById('crosshairGroup');
     }
 
-    var on = function(eventName, handler) {
+    var on = function (eventName, handler) {
         switch (eventName) {
-          case "hitsChanged":
-            return mHitsChangedHandlers.push(handler);
-          default:
-            return alert('write something for this event :)');
+            case "hitsChanged":
+                return mHitsChangedHandlers.push(handler);
+            default:
+                return alert('write something for this event :)');
         }
-      }
+    }
 
-      var dispatchHitsChanged = function(arg) {
+    var dispatchHitsChanged = function (arg) {
         var handler, i, len, ref;
         ref = mHitsChangedHandlers;
         for (i = 0, len = ref.length; i < len; i++) {
-          handler = ref[i];
-          setTimeout(handler, 0,arg);
+            handler = ref[i];
+            setTimeout(handler, 0, arg);
         }
-      };  
-   
+    };
+
 
     // private
     var insertHitsGroup = function () {
@@ -304,7 +304,7 @@ var targetControl = (function () {
     }
 
     var onTouchMove = function (ev) {
-        if (mCurInteractionMode == 2/*InteractionMode.Touch*/||mCurInteractionMode == 3/*InteractionMode.Style*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
+        if (mCurInteractionMode == 2/*InteractionMode.Touch*/ || mCurInteractionMode == 3/*InteractionMode.Style*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
             //var rect = mElement.getBoundingClientRect();
             //var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
             var pos = getOffsetedTouchPosAndNormalizedPos(ev);
@@ -480,18 +480,21 @@ var targetControl = (function () {
 
     var paintTarget = function (ctx) {
         var canvasInfo = new CanvasInfo(1, 1);
-        var targetSegments = getTargetSegments();
+        var targetSegments = getTargetSegmentsSpots();// getTargetSegments();
 
-        for (var i = 0; i < targetSegments.length; ++i) {
-            var s = targetSegments[i];
-            var segmentEndRadius;
-            if (i < targetSegments.length - 1) {
-                segmentEndRadius = targetSegments[i + 1].radius;
-            } else {
-                segmentEndRadius = 0;
+        for (var si = 0; si < targetSegments.length; ++si) {
+            var segments = targetSegments[si];
+            for (var i = 0; i < segments.segments.length; ++i) {
+                var s = segments.segments[i];
+                var segmentEndRadius;
+                if (i < targetSegments.length - 1) {
+                    segmentEndRadius = segments.segments[i + 1].radius;
+                } else {
+                    segmentEndRadius = 0;
+                }
+                paintSegmentTs(ctx, canvasInfo, segments.centerX,segments.centerY,s.radius, s.radius - s.marginWidth, s.marginColor);
+                paintSegmentTs(ctx, canvasInfo, segments.centerX,segments.centerY,s.radius - s.marginWidth, segmentEndRadius, s.segmentColor);
             }
-            paintSegmentTs(ctx, canvasInfo, s.radius, s.radius - s.marginWidth, s.marginColor);
-            paintSegmentTs(ctx, canvasInfo, s.radius - s.marginWidth, segmentEndRadius, s.segmentColor);
         }
     }
 
@@ -500,12 +503,12 @@ var targetControl = (function () {
         return '#' + (0x1000000 + rgb).toString(16).slice(1)
     }
 
-    var paintSegmentTs = function (ctx, canvasInfo, startRadius, endRadius, color) {
+    var paintSegmentTs = function (ctx, canvasInfo, centerX,centerY,startRadius, endRadius, color) {
         ctx.beginPath();
         var startRadiusPx = startRadius * canvasInfo.radiusX();
         var endRadiusPx = endRadius * canvasInfo.radiusX();
         var middlePx = (startRadiusPx + endRadiusPx) / 2;
-        ctx.arc(canvasInfo.centerX(), canvasInfo.centerY(), middlePx, 0, 2 * Math.PI);
+        ctx.arc(centerX*canvasInfo.width/*canvasInfo.centerX()*/, centerY*canvasInfo.height/*canvasInfo.centerY()*/, middlePx, 0, 2 * Math.PI);
         ctx.lineWidth = -endRadiusPx + startRadiusPx;
         ctx.strokeStyle = rgbToHex(color);
         ctx.stroke();
@@ -526,67 +529,195 @@ var targetControl = (function () {
         var BlueSegmentText = [0, 56, 85];
         var Black = [0, 0, 0];
         var White = [255, 255, 255];
+     
         return [
-            new TargetSegment(1.0,
-                defaultMarginWidth,
-                "1",
-                WhiteSegment,        /* Segment color */
-                Black,               /* Margin color */
-                WhiteSegmentText),   /* Text color */
-            new TargetSegment(0.9,
-                defaultMarginWidth,
-                "2",
-                WhiteSegment,
-                Black,
-                WhiteSegmentText),
-            new TargetSegment(0.8,
-                defaultMarginWidth,
-                "3",
-                BlackSegment,
-                White,
-                BlackSegmentText),
-            new TargetSegment(0.7,
-                defaultMarginWidth,
-                "4",
-                BlackSegment,
-                White,
-                BlackSegmentText),
-            new TargetSegment(0.6,
-                defaultMarginWidth,
-                "5",
-                BlueSegment,
-                Black,
-                BlueSegmentText),
-            new TargetSegment(0.5,
-                defaultMarginWidth,
-                "6",
-                BlueSegment,
-                Black,
-                BlueSegmentText),
-            new TargetSegment(0.4,
-                defaultMarginWidth,
-                "7",
-                RedSegment,
-                Black,
-                RedSegmentText),
-            new TargetSegment(0.3,
-                defaultMarginWidth,
-                "8",
-                RedSegment,
-                Black,
-                RedSegmentText),
-            new TargetSegment(0.2,
-                defaultMarginWidth,
-                "9",
-                GoldSegment,
-                Black,
-                GoldSegmentText),
-            new TargetSegment(0.1,
-                defaultMarginWidth,
-                "10",
-                GoldSegment,
-                Black,
-                GoldSegmentText)
+            {
+                centerX: 0.5, centerY: 0.5,
+                segments: [
+                    new TargetSegment(1.0,
+                        defaultMarginWidth,
+                        "1",
+                        WhiteSegment,        /* Segment color */
+                        Black,               /* Margin color */
+                        WhiteSegmentText),   /* Text color */
+                    new TargetSegment(0.9,
+                        defaultMarginWidth,
+                        "2",
+                        WhiteSegment,
+                        Black,
+                        WhiteSegmentText),
+                    new TargetSegment(0.8,
+                        defaultMarginWidth,
+                        "3",
+                        BlackSegment,
+                        White,
+                        BlackSegmentText),
+                    new TargetSegment(0.7,
+                        defaultMarginWidth,
+                        "4",
+                        BlackSegment,
+                        White,
+                        BlackSegmentText),
+                    new TargetSegment(0.6,
+                        defaultMarginWidth,
+                        "5",
+                        BlueSegment,
+                        Black,
+                        BlueSegmentText),
+                    new TargetSegment(0.5,
+                        defaultMarginWidth,
+                        "6",
+                        BlueSegment,
+                        Black,
+                        BlueSegmentText),
+                    new TargetSegment(0.4,
+                        defaultMarginWidth,
+                        "7",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(0.3,
+                        defaultMarginWidth,
+                        "8",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(0.2,
+                        defaultMarginWidth,
+                        "9",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText),
+                    new TargetSegment(0.1,
+                        defaultMarginWidth,
+                        "10",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText)]
+            }
+        ];
+    }
+    
+    var getTargetSegmentsSpots = function () {
+        var defaultMarginWidth = 0.01 / 2;
+
+        var WhiteSegment = [226, 216, 217];
+        var BlackSegment = [54, 49, 53];
+        var BlueSegment = [68, 173, 228];
+        var RedSegment = [231, 37, 35];
+        var RedSegmentText = [176, 127, 113];
+        var GoldSegment = [251, 209, 3];
+        var GoldSegmentText = [165, 135, 11];
+        var WhiteSegmentText = [111, 106, 103];
+        var BlackSegmentText = [181, 177, 174];
+        var BlueSegmentText = [0, 56, 85];
+        var Black = [0, 0, 0];
+        var White = [255, 255, 255];
+
+        const d = 0.01;
+        const h = (1-2*d)/3;
+        return  [
+            {
+                centerX: 0.5, centerY: h/2,
+                segments:[
+                    new TargetSegment(h,
+                        defaultMarginWidth,
+                        "6",
+                        BlueSegment,
+                        Black,
+                        BlueSegmentText),
+                    new TargetSegment(h-1*(h)/5,
+                        defaultMarginWidth,
+                        "7",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(h-2*(h)/5,
+                        defaultMarginWidth,
+                        "8",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(h-3*(h)/5,
+                        defaultMarginWidth,
+                        "9",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText),
+                    new TargetSegment(h-4*(h)/5,
+                        defaultMarginWidth,
+                        "10",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText)]
+            }, {
+                centerX: 0.5, centerY: h+(h/2)+d,
+                segments:[
+                    new TargetSegment(h,
+                        defaultMarginWidth,
+                        "6",
+                        BlueSegment,
+                        Black,
+                        BlueSegmentText),
+                    new TargetSegment(h-1*(h)/5,
+                        defaultMarginWidth,
+                        "7",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(h-2*(h)/5,
+                        defaultMarginWidth,
+                        "8",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(h-3*(h)/5,
+                        defaultMarginWidth,
+                        "9",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText),
+                    new TargetSegment(h-4*(h)/5,
+                        defaultMarginWidth,
+                        "10",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText)]
+            },
+            {
+                centerX: 0.5, centerY: 2*h+(h/2)+2*d,
+                segments:[
+                    new TargetSegment(h,
+                        defaultMarginWidth,
+                        "6",
+                        BlueSegment,
+                        Black,
+                        BlueSegmentText),
+                    new TargetSegment(h-1*(h)/5,
+                        defaultMarginWidth,
+                        "7",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(h-2*(h)/5,
+                        defaultMarginWidth,
+                        "8",
+                        RedSegment,
+                        Black,
+                        RedSegmentText),
+                    new TargetSegment(h-3*(h)/5,
+                        defaultMarginWidth,
+                        "9",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText),
+                    new TargetSegment(h-4*(h)/5,
+                        defaultMarginWidth,
+                        "10",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText)]
+            }
         ];
     }
 
@@ -689,7 +820,7 @@ var targetControl = (function () {
         mShotPositions.push(new Shot(x, y, 2));
         drawHits(mShotPositions);
 
-        dispatchHitsChanged({"targetcontrol":targetControl});
+        dispatchHitsChanged({ "targetcontrol": targetControl });
         /*if (this._hitsChangedEvent != null) {
             this._hitsChangedEvent(this, 42);
         }*/
@@ -727,13 +858,13 @@ var targetControl = (function () {
         this.score = score;
     }
 
-    var getShots=function(){
+    var getShots = function () {
         return mShotPositions;
     }
 
     return {
         initialize: initialize,
-        on:on,
-        getShots:getShots
+        on: on,
+        getShots: getShots
     }
 })();
