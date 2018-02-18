@@ -148,6 +148,9 @@ var targetControl = (function () {
                 step: function (now, fx) {
                     //console.log("anim now " + now);
                     var ctx = mElement.getContext("2d");
+                    if (startZoom < endZoom) {
+                        ctx.clearRect(0, 0, mElement.width, mElement.height);
+                    }
                     setTransform(ctx, mZoomCenterPos.x, mZoomCenterPos.y, now);
                     ctx.drawImage(mBackupElement, 0, 0, getCanvasWidth(), getCanvasHeight());
 
@@ -157,6 +160,7 @@ var targetControl = (function () {
                 },
                 complete: function (now, fx) {
                     var ctx = mElement.getContext("2d");
+                    ctx.clearRect(0, 0, mElement.width, mElement.height);
                     drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, endZoom);
 
                     setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, endZoom);
@@ -184,7 +188,7 @@ var targetControl = (function () {
             mCurInteractionMode = 1 /*InteractionMode.Mouse*/;
         }
         ev.preventDefault();
-        console.log("Down");
+       // console.log("Down");
     }
 
     var onMouseUpHandler = function (ev) {
@@ -305,33 +309,12 @@ var targetControl = (function () {
 
     var onTouchMove = function (ev) {
         if (mCurInteractionMode == 2/*InteractionMode.Touch*/ || mCurInteractionMode == 3/*InteractionMode.Style*/ || mCurInteractionMode == 0/*InteractionMode.Invalid*/) {
-            //var rect = mElement.getBoundingClientRect();
-            //var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
             var pos = getOffsetedTouchPosAndNormalizedPos(ev);
 
-            console.log("x:" + pos[1].x + " y:" + pos[1].y);
+            //console.log("x:" + pos[1].x + " y:" + pos[1].y);
             mCrosshairElement.setAttribute('transform',
                 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos[0].x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos[0].y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
 
-            /* if (pos[1].x > 0.45 || pos[1].x<-0.45 || pos[1].y>0.45||pos[1].y<-0.45)                
-             {
-                 var dir = { x: 2 * (pos[1].x ), y: 2 * (pos[1].y ) };
-                 var l = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
-                 dir = { x: dir.x / l, y: dir.y / l };
- 
-                 mZoomCenterPos.x += dir.x*5;
-                 mZoomCenterPos.y += dir.y*5;
-                 var ctx = mElement.getContext("2d");
-         
-                 drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
-                 setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
- 
-                 mLastTimeNormalizedTouchPos=pos[1];
-                 if (mTimerTouchOutOfElement==null)
-                 {
-                     mTimerTouchOutOfElement=window.setInterval(onTouchAtEdgesOrOutOfElement,1000/10);
-                 }
-             }*/
             if (updatePositionBasedOnNormalizedTouchPos(pos[1])) {
                 mLastTimeNormalizedTouchPos = pos[1];
                 if (mTimerTouchOutOfElement == null) {
@@ -356,7 +339,7 @@ var targetControl = (function () {
             mZoomCenterPos.x += dir.x * 5;
             mZoomCenterPos.y += dir.y * 5;
             var ctx = mElement.getContext("2d");
-
+            ctx.clearRect(0, 0, mElement.width, mElement.height);
             drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
             setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
             return true;
@@ -480,7 +463,7 @@ var targetControl = (function () {
 
     var paintTarget = function (ctx) {
         var canvasInfo = new CanvasInfo(1, 1);
-        var targetSegments = getTargetSegmentsSpots();// getTargetSegments();
+        var targetSegments = getTargetSegments/*Spots*/();// getTargetSegments();
 
         for (var si = 0; si < targetSegments.length; ++si) {
             var segments = targetSegments[si];
@@ -492,8 +475,8 @@ var targetControl = (function () {
                 } else {
                     segmentEndRadius = 0;
                 }
-                paintSegmentTs(ctx, canvasInfo, segments.centerX,segments.centerY,s.radius, s.radius - s.marginWidth, s.marginColor);
-                paintSegmentTs(ctx, canvasInfo, segments.centerX,segments.centerY,s.radius - s.marginWidth, segmentEndRadius, s.segmentColor);
+                paintSegmentTs(ctx, canvasInfo, segments.centerX, segments.centerY, s.radius, s.radius - s.marginWidth, s.marginColor);
+                paintSegmentTs(ctx, canvasInfo, segments.centerX, segments.centerY, s.radius - s.marginWidth, segmentEndRadius, s.segmentColor);
             }
         }
     }
@@ -503,18 +486,19 @@ var targetControl = (function () {
         return '#' + (0x1000000 + rgb).toString(16).slice(1)
     }
 
-    var paintSegmentTs = function (ctx, canvasInfo, centerX,centerY,startRadius, endRadius, color) {
+    var paintSegmentTs = function (ctx, canvasInfo, centerX, centerY, startRadius, endRadius, color) {
         ctx.beginPath();
         var startRadiusPx = startRadius * canvasInfo.radiusX();
         var endRadiusPx = endRadius * canvasInfo.radiusX();
         var middlePx = (startRadiusPx + endRadiusPx) / 2;
-        ctx.arc(centerX*canvasInfo.width/*canvasInfo.centerX()*/, centerY*canvasInfo.height/*canvasInfo.centerY()*/, middlePx, 0, 2 * Math.PI);
+        ctx.arc(centerX * canvasInfo.width/*canvasInfo.centerX()*/, centerY * canvasInfo.height/*canvasInfo.centerY()*/, middlePx, 0, 2 * Math.PI);
         ctx.lineWidth = -endRadiusPx + startRadiusPx;
         ctx.strokeStyle = rgbToHex(color);
         ctx.stroke();
     }
 
     var getTargetSegments = function () {
+        //return getTargetSegmentsSpots();
         var defaultMarginWidth = 0.01 / 2;
 
         var WhiteSegment = [226, 216, 217];
@@ -529,7 +513,7 @@ var targetControl = (function () {
         var BlueSegmentText = [0, 56, 85];
         var Black = [0, 0, 0];
         var White = [255, 255, 255];
-     
+
         return [
             {
                 centerX: 0.5, centerY: 0.5,
@@ -597,7 +581,7 @@ var targetControl = (function () {
             }
         ];
     }
-    
+
     var getTargetSegmentsSpots = function () {
         var defaultMarginWidth = 0.01 / 2;
 
@@ -615,69 +599,69 @@ var targetControl = (function () {
         var White = [255, 255, 255];
 
         const d = 0.01;
-        const h = (1-2*d)/3;
-        return  [
+        const h = (1 - 2 * d) / 3;
+        return [
             {
-                centerX: 0.5, centerY: h/2,
-                segments:[
+                centerX: 0.5, centerY: h / 2,
+                segments: [
                     new TargetSegment(h,
                         defaultMarginWidth,
                         "6",
                         BlueSegment,
                         Black,
                         BlueSegmentText),
-                    new TargetSegment(h-1*(h)/5,
+                    new TargetSegment(h - 1 * (h) / 5,
                         defaultMarginWidth,
                         "7",
                         RedSegment,
                         Black,
                         RedSegmentText),
-                    new TargetSegment(h-2*(h)/5,
+                    new TargetSegment(h - 2 * (h) / 5,
                         defaultMarginWidth,
                         "8",
                         RedSegment,
                         Black,
                         RedSegmentText),
-                    new TargetSegment(h-3*(h)/5,
+                    new TargetSegment(h - 3 * (h) / 5,
                         defaultMarginWidth,
                         "9",
                         GoldSegment,
                         Black,
                         GoldSegmentText),
-                    new TargetSegment(h-4*(h)/5,
+                    new TargetSegment(h - 4 * (h) / 5,
                         defaultMarginWidth,
                         "10",
                         GoldSegment,
                         Black,
                         GoldSegmentText)]
             }, {
-                centerX: 0.5, centerY: h+(h/2)+d,
-                segments:[
+                centerX: 0.5, centerY: h + (h / 2) + d,
+                segments: [
                     new TargetSegment(h,
                         defaultMarginWidth,
                         "6",
                         BlueSegment,
                         Black,
                         BlueSegmentText),
-                    new TargetSegment(h-1*(h)/5,
+                    new TargetSegment(h - 1 * (h) / 5,
                         defaultMarginWidth,
                         "7",
                         RedSegment,
                         Black,
                         RedSegmentText),
-                    new TargetSegment(h-2*(h)/5,
+                    new TargetSegment(h - 2 * (h) / 5,
                         defaultMarginWidth,
                         "8",
                         RedSegment,
                         Black,
                         RedSegmentText),
-                    new TargetSegment(h-3*(h)/5,
+                    new TargetSegment(h - 3 * (h) / 5,
                         defaultMarginWidth,
                         "9",
                         GoldSegment,
                         Black,
                         GoldSegmentText),
-                    new TargetSegment(h-4*(h)/5,
+                    new TargetSegment(h - 4 * (h) / 5,
                         defaultMarginWidth,
                         "10",
                         GoldSegment,
@@ -685,33 +669,33 @@ var targetControl = (function () {
                         GoldSegmentText)]
             },
             {
-                centerX: 0.5, centerY: 2*h+(h/2)+2*d,
-                segments:[
+                centerX: 0.5, centerY: 2 * h + (h / 2) + 2 * d,
+                segments: [
                     new TargetSegment(h,
                         defaultMarginWidth,
                         "6",
                         BlueSegment,
                         Black,
                         BlueSegmentText),
-                    new TargetSegment(h-1*(h)/5,
+                    new TargetSegment(h - 1 * (h) / 5,
                         defaultMarginWidth,
                         "7",
                         RedSegment,
                         Black,
                         RedSegmentText),
-                    new TargetSegment(h-2*(h)/5,
+                    new TargetSegment(h - 2 * (h) / 5,
                         defaultMarginWidth,
                         "8",
                         RedSegment,
                         Black,
                         RedSegmentText),
-                    new TargetSegment(h-3*(h)/5,
+                    new TargetSegment(h - 3 * (h) / 5,
                         defaultMarginWidth,
                         "9",
                         GoldSegment,
                         Black,
                         GoldSegmentText),
-                    new TargetSegment(h-4*(h)/5,
+                    new TargetSegment(h - 4 * (h) / 5,
                         defaultMarginWidth,
                         "10",
                         GoldSegment,
@@ -838,7 +822,7 @@ var targetControl = (function () {
         mZoomCenterPos.x += dir.x * sx/*5*/;
         mZoomCenterPos.y += dir.y * sy/*5*/;
         var ctx = mElement.getContext("2d");
-
+        ctx.clearRect(0, 0, mElement.width, mElement.height);
         drawZoomed(ctx, mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
         setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
