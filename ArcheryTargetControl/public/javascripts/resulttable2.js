@@ -1,4 +1,5 @@
-var shotResultTable = (function () {
+//var shotResultTable = (function () {
+define(function (){    
 
     var mHtmlElement;
 
@@ -13,8 +14,10 @@ var shotResultTable = (function () {
 
     var onTableChanged = function (tableChgInfo) {
         clearTableContent();
-        var shotCtrl=tableChgInfo["targetcontrol"];
-        var shots = shotCtrl.getShots();
+        /*var shotCtrl=tableChgInfo["targetcontrol"];
+        var shots = shotCtrl.getShots();*/
+        var getShotsFunc=tableChgInfo["getShots"];
+        var shots=getShotsFunc();
         addRows(shots);
     }
 
@@ -42,4 +45,4 @@ var shotResultTable = (function () {
         initialize: initialize,
         onTableChanged: onTableChanged
     }
-})();
+});

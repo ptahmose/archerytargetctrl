@@ -4,14 +4,17 @@
 <head>
     <meta charset="utf-8" />
     <title>Archery-Control (2)</title>
-    <script src="../javascripts/lib/jquery.min.js"></script>
-    <script src="../javascripts/targetctrl2.js"></script>
-    <script src="../javascripts/resulttable2.js"></script>
+    <!-- <script src="../javascripts/lib/jquery.min.js"></script> -->
+
+    <!-- <script data-main="../javascripts/main" src="../javascripts/require.js"/> -->
+    <!-- <script src="../javascripts/targetctrl2.js"></script>
+    <script src="../javascripts/resulttable2.js"></script> -->
 </head>
 
 <body>
     <h1>Archery-Control (2)</h1>
 
+    
     <div id="targetDiv" style="touch-action: none;position: relative;" width="512" height="512">
         <canvas id="myCanvas" style="touch-action: none;" ></canvas>
 
@@ -64,8 +67,9 @@
           </table> 
     </div>
 
+    <script data-main="../javascripts/main" src="../javascripts/require.js"/>
     <script>
-        window.onload = () => {
+       /* window.onload = () => {
 
             var el = document.getElementById('myCanvas');
             var svg = document.getElementById('mySvg');
@@ -97,7 +101,7 @@
              );
             }());
            // (function(targetCtrl){table.onTableChanged(targetCtrl);}){}());
-        }
+        }*/
     </script>
 
 </body>

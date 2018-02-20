@@ -1,4 +1,5 @@
-var targetControl = (function () {
+//var targetControl = (function () {
+define(function () {    
     var mElement;
     var mSvgElement;
     var mCurZoom = 1;
@@ -465,9 +466,11 @@ var targetControl = (function () {
         var canvasInfo = new CanvasInfo(1, 1);
         var targetSegments = getTargetSegments/*Spots*/();// getTargetSegments();
 
-        for (var si = 0; si < targetSegments.length; ++si) {
+        var targetSegmentsLength=targetSegments.length;
+        for (var si = 0; si < targetSegmentsLength; ++si) {
             var segments = targetSegments[si];
-            for (var i = 0; i < segments.segments.length; ++i) {
+            var segmentsSegmentsLength=segments.segments.length;
+            for (var i = 0; i < segmentsSegmentsLength; ++i) {
                 var s = segments.segments[i];
                 var segmentEndRadius;
                 if (i < targetSegments.length - 1) {
@@ -523,7 +526,8 @@ var targetControl = (function () {
                         "1",
                         WhiteSegment,        /* Segment color */
                         Black,               /* Margin color */
-                        WhiteSegmentText),   /* Text color */
+                        WhiteSegmentText,
+                        1),   /* Text color */
                     new TargetSegment(0.9,
                         defaultMarginWidth,
                         "2",
@@ -804,7 +808,8 @@ var targetControl = (function () {
         mShotPositions.push(new Shot(x, y, 2));
         drawHits(mShotPositions);
 
-        dispatchHitsChanged({ "targetcontrol": targetControl });
+        //dispatchHitsChanged({ "targetcontrol": this/*targetControl*/ });
+        dispatchHitsChanged({ "getShots": getShots/*targetControl*/ });
         /*if (this._hitsChangedEvent != null) {
             this._hitsChangedEvent(this, 42);
         }*/
@@ -827,13 +832,14 @@ var targetControl = (function () {
         setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
 
-    var TargetSegment = function (radius, marginWidth, text, segmentColor, marginColor, textColor) {
+    var TargetSegment = function (radius, marginWidth, text, segmentColor, marginColor, textColor,score) {
         this.radius = radius;
         this.marginWidth = marginWidth;
         this.text = text;
         this.segmentColor = segmentColor;
         this.marginColor = marginColor;
         this.textColor = textColor;
+        this.score = score;
     }
 
     var Shot = function (xNormalized, yNormalized, score) {
@@ -851,4 +857,4 @@ var targetControl = (function () {
         on: on,
         getShots: getShots
     }
-})();
+});
