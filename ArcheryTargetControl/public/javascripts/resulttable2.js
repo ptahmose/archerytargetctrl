@@ -1,5 +1,9 @@
+"use strict";
 //var shotResultTable = (function () {
-define(function (){    
+define(function (require){    
+
+    var targetctrldata = require("targetctrldata");
+
 
     var mHtmlElement;
 
@@ -18,7 +22,8 @@ define(function (){
         var shots = shotCtrl.getShots();*/
         var getShotsFunc=tableChgInfo["getShots"];
         var shots=getShotsFunc();
-        addRows(shots);
+        var targetSegments=tableChgInfo["getTargetSegments"]();
+        addRows(shots,targetSegments);
     }
 
     var clearTableContent=function(){
@@ -30,13 +35,17 @@ define(function (){
         }
     }
 
-    var addRows=function(shots){
+    var addRows=function(shots,segments){
         shots.forEach(element => {
             var row = mHtmlElement.insertRow(-1);
             var dataCell = row.insertCell(-1);
-            dataCell.innerHTML = element.score.toString();
+            //dataCell.innerHTML = element.score.toString();
+            var score = targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);
+            dataCell.innerHTML = score!=null?score.toString():"M";
             dataCell = row.insertCell(-1);
             dataCell.innerHTML = element.xNormalized+","+element.yNormalized;
+
+            targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);
         });
     }
 

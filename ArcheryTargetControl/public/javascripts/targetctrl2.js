@@ -1,5 +1,6 @@
+"use strict";
 //var targetControl = (function () {
-define(function () {    
+define(['jquery'],function ($) {    
     var mElement;
     var mSvgElement;
     var mCurZoom = 1;
@@ -55,7 +56,8 @@ define(function () {
         ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
 
         insertHitsGroup();
-        var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
+        //var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
+        var h = [];
         mShotPositions = h;
         drawHits(h);
 
@@ -533,55 +535,64 @@ define(function () {
                         "2",
                         WhiteSegment,
                         Black,
-                        WhiteSegmentText),
+                        WhiteSegmentText,
+                        2),
                     new TargetSegment(0.8,
                         defaultMarginWidth,
                         "3",
                         BlackSegment,
                         White,
-                        BlackSegmentText),
+                        BlackSegmentText,
+                        3),
                     new TargetSegment(0.7,
                         defaultMarginWidth,
                         "4",
                         BlackSegment,
                         White,
-                        BlackSegmentText),
+                        BlackSegmentText,
+                        4),
                     new TargetSegment(0.6,
                         defaultMarginWidth,
                         "5",
                         BlueSegment,
                         Black,
-                        BlueSegmentText),
+                        BlueSegmentText,
+                        5),
                     new TargetSegment(0.5,
                         defaultMarginWidth,
                         "6",
                         BlueSegment,
                         Black,
-                        BlueSegmentText),
+                        BlueSegmentText,
+                        6),
                     new TargetSegment(0.4,
                         defaultMarginWidth,
                         "7",
                         RedSegment,
                         Black,
-                        RedSegmentText),
+                        RedSegmentText,
+                        7),
                     new TargetSegment(0.3,
                         defaultMarginWidth,
                         "8",
                         RedSegment,
                         Black,
-                        RedSegmentText),
+                        RedSegmentText,
+                        8),
                     new TargetSegment(0.2,
                         defaultMarginWidth,
                         "9",
                         GoldSegment,
                         Black,
-                        GoldSegmentText),
+                        GoldSegmentText,
+                        9),
                     new TargetSegment(0.1,
                         defaultMarginWidth,
                         "10",
                         GoldSegment,
                         Black,
-                        GoldSegmentText)]
+                        GoldSegmentText,
+                        10)]
             }
         ];
     }
@@ -809,7 +820,7 @@ define(function () {
         drawHits(mShotPositions);
 
         //dispatchHitsChanged({ "targetcontrol": this/*targetControl*/ });
-        dispatchHitsChanged({ "getShots": getShots/*targetControl*/ });
+        dispatchHitsChanged({ "getShots": getShots/*targetControl*/,"getTargetSegments":getTargetSegments });
         /*if (this._hitsChangedEvent != null) {
             this._hitsChangedEvent(this, 42);
         }*/
