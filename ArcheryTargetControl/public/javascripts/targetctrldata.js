@@ -34,6 +34,53 @@ define(function () {
         this.score = score;
     }
 
+    function create3Spots()
+    {
+        const d = 0.01;
+        const h = (1 - 2 * d) / 3;
+        var tc=[];
+        for (var i=0;i<3;++i){
+            var c = {
+                centerX: 0.5,
+                centerY: i * h + (h / 2) + i * d,
+                segments: [
+                    new TargetSegment(h,
+                        defaultMarginWidth,
+                        "6",
+                        BlueSegment,
+                        Black,
+                        BlueSegmentText,6),
+                    new TargetSegment(h - 1 * (h) / 5,
+                        defaultMarginWidth,
+                        "7",
+                        RedSegment,
+                        Black,
+                        RedSegmentText,7),
+                    new TargetSegment(h - 2 * (h) / 5,
+                        defaultMarginWidth,
+                        "8",
+                        RedSegment,
+                        Black,
+                        RedSegmentText,8),
+                    new TargetSegment(h - 3 * (h) / 5,
+                        defaultMarginWidth,
+                        "9",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText,9),
+                    new TargetSegment(h - 4 * (h) / 5,
+                        defaultMarginWidth,
+                        "10",
+                        GoldSegment,
+                        Black,
+                        GoldSegmentText,10)]
+                    };
+                tc.push(c);
+            }
+            
+        return tc;
+    }
+
     var targetCtrl_1To10 = [
         {
             centerX: 0.5, centerY: 0.5,
@@ -111,111 +158,7 @@ define(function () {
         }
     ];
 
-    const d = 0.01;
-    const h = (1 - 2 * d) / 3;
-    _3Spots= [
-        {
-            centerX: 0.5, centerY: h / 2,
-            segments: [
-                new TargetSegment(h,
-                    defaultMarginWidth,
-                    "6",
-                    BlueSegment,
-                    Black,
-                    BlueSegmentText,6),
-                new TargetSegment(h - 1 * (h) / 5,
-                    defaultMarginWidth,
-                    "7",
-                    RedSegment,
-                    Black,
-                    RedSegmentText,7),
-                new TargetSegment(h - 2 * (h) / 5,
-                    defaultMarginWidth,
-                    "8",
-                    RedSegment,
-                    Black,
-                    RedSegmentText,8),
-                new TargetSegment(h - 3 * (h) / 5,
-                    defaultMarginWidth,
-                    "9",
-                    GoldSegment,
-                    Black,
-                    GoldSegmentText,9),
-                new TargetSegment(h - 4 * (h) / 5,
-                    defaultMarginWidth,
-                    "10",
-                    GoldSegment,
-                    Black,
-                    GoldSegmentText,10)]
-        }, {
-            centerX: 0.5, centerY: h + (h / 2) + d,
-            segments: [
-                new TargetSegment(h,
-                    defaultMarginWidth,
-                    "6",
-                    BlueSegment,
-                    Black,
-                    BlueSegmentText,6),
-                new TargetSegment(h - 1 * (h) / 5,
-                    defaultMarginWidth,
-                    "7",
-                    RedSegment,
-                    Black,
-                    RedSegmentText,7),
-                new TargetSegment(h - 2 * (h) / 5,
-                    defaultMarginWidth,
-                    "8",
-                    RedSegment,
-                    Black,
-                    RedSegmentText,8),
-                new TargetSegment(h - 3 * (h) / 5,
-                    defaultMarginWidth,
-                    "9",
-                    GoldSegment,
-                    Black,
-                    GoldSegmentText,9),
-                new TargetSegment(h - 4 * (h) / 5,
-                    defaultMarginWidth,
-                    "10",
-                    GoldSegment,
-                    Black,
-                    GoldSegmentText,10)]
-        },
-        {
-            centerX: 0.5, centerY: 2 * h + (h / 2) + 2 * d,
-            segments: [
-                new TargetSegment(h,
-                    defaultMarginWidth,
-                    "6",
-                    BlueSegment,
-                    Black,
-                    BlueSegmentText,6),
-                new TargetSegment(h - 1 * (h) / 5,
-                    defaultMarginWidth,
-                    "7",
-                    RedSegment,
-                    Black,
-                    RedSegmentText,7),
-                new TargetSegment(h - 2 * (h) / 5,
-                    defaultMarginWidth,
-                    "8",
-                    RedSegment,
-                    Black,
-                    RedSegmentText,8),
-                new TargetSegment(h - 3 * (h) / 5,
-                    defaultMarginWidth,
-                    "9",
-                    GoldSegment,
-                    Black,
-                    GoldSegmentText,9),
-                new TargetSegment(h - 4 * (h) / 5,
-                    defaultMarginWidth,
-                    "10",
-                    GoldSegment,
-                    Black,
-                    GoldSegmentText,10)]
-        }
-    ];
+    _3Spots= create3Spots();
 
     var targetControls =
     {
