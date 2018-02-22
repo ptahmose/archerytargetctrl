@@ -13,8 +13,8 @@ requirejs.config({
     }
 });
 
-requirejs(["jquery","targetctrl2","resulttable2"], 
-    function($,targetControl,shotResultTable) {
+requirejs(["jquery","targetctrl2","resulttable2","targetctrldata"], 
+    function($,targetControl,shotResultTable,targetctrldata) {
     //This function is called when scripts/helper/util.js is loaded.
     //If util.js calls define(), then this function is not fired until
     //util's dependencies have loaded, and the util argument will hold
@@ -39,7 +39,13 @@ requirejs(["jquery","targetctrl2","resulttable2"],
         el.setAttribute('height', h + 'px');
 
 
-        targetControl.initialize('myCanvas','mySvg');
+        targetControl.initialize(
+            'myCanvas',
+            'mySvg',
+            function(){
+                //return targetctrldata.getTarget("1To10");
+                return targetctrldata.getTarget("3Spots");
+            });
         targetControl.on("hitsChanged",function(){console.log("HITS CHANGED");});
         // alert("HELLO");
 
