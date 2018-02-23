@@ -187,6 +187,10 @@ define(function () {
             return null;
         },
 
+        getTargetList:function(){
+            return Object.keys(targetControls); // https://stackoverflow.com/questions/3068534/getting-javascript-object-key-list
+        },
+
         getTarget:function(name){
             var val = targetControls[name];
             return val;
