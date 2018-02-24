@@ -67,6 +67,21 @@ define(['jquery'],function ($) {
         mCrosshairElement = mSvgElement.getElementById('crosshairGroup');
     }
 
+    var notifyTargetControlDescriptionChanged=function(){
+        // here we re-draw the canvas (with a potentially new TargetControlDescription)
+        var ctx = mElement.getContext("2d");
+        ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
+        ctx.clearRect(0, 0, mElement.width, mElement.height);
+        paintTarget(ctx);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        var ctxBackup = mBackupElement.getContext("2d");
+        ctxBackup.clearRect(0, 0, mElement.width, mElement.height);
+        ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
+
+        fireHitsChanged();
+    }
+
     var on = function (eventName, handler) {
         switch (eventName) {
             case "hitsChanged":
@@ -506,224 +521,6 @@ define(['jquery'],function ($) {
         ctx.stroke();
     }
 
-    // var getTargetSegments = function () {
-    //     //return getTargetSegmentsSpots();
-    //     var defaultMarginWidth = 0.01 / 2;
-
-    //     var WhiteSegment = [226, 216, 217];
-    //     var BlackSegment = [54, 49, 53];
-    //     var BlueSegment = [68, 173, 228];
-    //     var RedSegment = [231, 37, 35];
-    //     var RedSegmentText = [176, 127, 113];
-    //     var GoldSegment = [251, 209, 3];
-    //     var GoldSegmentText = [165, 135, 11];
-    //     var WhiteSegmentText = [111, 106, 103];
-    //     var BlackSegmentText = [181, 177, 174];
-    //     var BlueSegmentText = [0, 56, 85];
-    //     var Black = [0, 0, 0];
-    //     var White = [255, 255, 255];
-
-    //     return [
-    //         {
-    //             centerX: 0.5, centerY: 0.5,
-    //             segments: [
-    //                 new TargetSegment(1.0,
-    //                     defaultMarginWidth,
-    //                     "1",
-    //                     WhiteSegment,        /* Segment color */
-    //                     Black,               /* Margin color */
-    //                     WhiteSegmentText,
-    //                     1),   /* Text color */
-    //                 new TargetSegment(0.9,
-    //                     defaultMarginWidth,
-    //                     "2",
-    //                     WhiteSegment,
-    //                     Black,
-    //                     WhiteSegmentText,
-    //                     2),
-    //                 new TargetSegment(0.8,
-    //                     defaultMarginWidth,
-    //                     "3",
-    //                     BlackSegment,
-    //                     White,
-    //                     BlackSegmentText,
-    //                     3),
-    //                 new TargetSegment(0.7,
-    //                     defaultMarginWidth,
-    //                     "4",
-    //                     BlackSegment,
-    //                     White,
-    //                     BlackSegmentText,
-    //                     4),
-    //                 new TargetSegment(0.6,
-    //                     defaultMarginWidth,
-    //                     "5",
-    //                     BlueSegment,
-    //                     Black,
-    //                     BlueSegmentText,
-    //                     5),
-    //                 new TargetSegment(0.5,
-    //                     defaultMarginWidth,
-    //                     "6",
-    //                     BlueSegment,
-    //                     Black,
-    //                     BlueSegmentText,
-    //                     6),
-    //                 new TargetSegment(0.4,
-    //                     defaultMarginWidth,
-    //                     "7",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText,
-    //                     7),
-    //                 new TargetSegment(0.3,
-    //                     defaultMarginWidth,
-    //                     "8",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText,
-    //                     8),
-    //                 new TargetSegment(0.2,
-    //                     defaultMarginWidth,
-    //                     "9",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText,
-    //                     9),
-    //                 new TargetSegment(0.1,
-    //                     defaultMarginWidth,
-    //                     "10",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText,
-    //                     10)]
-    //         }
-    //     ];
-    // }
-
-    // var getTargetSegmentsSpots = function () {
-    //     var defaultMarginWidth = 0.01 / 2;
-
-    //     var WhiteSegment = [226, 216, 217];
-    //     var BlackSegment = [54, 49, 53];
-    //     var BlueSegment = [68, 173, 228];
-    //     var RedSegment = [231, 37, 35];
-    //     var RedSegmentText = [176, 127, 113];
-    //     var GoldSegment = [251, 209, 3];
-    //     var GoldSegmentText = [165, 135, 11];
-    //     var WhiteSegmentText = [111, 106, 103];
-    //     var BlackSegmentText = [181, 177, 174];
-    //     var BlueSegmentText = [0, 56, 85];
-    //     var Black = [0, 0, 0];
-    //     var White = [255, 255, 255];
-
-    //     const d = 0.01;
-    //     const h = (1 - 2 * d) / 3;
-    //     return [
-    //         {
-    //             centerX: 0.5, centerY: h / 2,
-    //             segments: [
-    //                 new TargetSegment(h,
-    //                     defaultMarginWidth,
-    //                     "6",
-    //                     BlueSegment,
-    //                     Black,
-    //                     BlueSegmentText),
-    //                 new TargetSegment(h - 1 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "7",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText),
-    //                 new TargetSegment(h - 2 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "8",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText),
-    //                 new TargetSegment(h - 3 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "9",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText),
-    //                 new TargetSegment(h - 4 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "10",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText)]
-    //         }, {
-    //             centerX: 0.5, centerY: h + (h / 2) + d,
-    //             segments: [
-    //                 new TargetSegment(h,
-    //                     defaultMarginWidth,
-    //                     "6",
-    //                     BlueSegment,
-    //                     Black,
-    //                     BlueSegmentText),
-    //                 new TargetSegment(h - 1 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "7",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText),
-    //                 new TargetSegment(h - 2 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "8",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText),
-    //                 new TargetSegment(h - 3 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "9",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText),
-    //                 new TargetSegment(h - 4 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "10",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText)]
-    //         },
-    //         {
-    //             centerX: 0.5, centerY: 2 * h + (h / 2) + 2 * d,
-    //             segments: [
-    //                 new TargetSegment(h,
-    //                     defaultMarginWidth,
-    //                     "6",
-    //                     BlueSegment,
-    //                     Black,
-    //                     BlueSegmentText),
-    //                 new TargetSegment(h - 1 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "7",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText),
-    //                 new TargetSegment(h - 2 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "8",
-    //                     RedSegment,
-    //                     Black,
-    //                     RedSegmentText),
-    //                 new TargetSegment(h - 3 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "9",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText),
-    //                 new TargetSegment(h - 4 * (h) / 5,
-    //                     defaultMarginWidth,
-    //                     "10",
-    //                     GoldSegment,
-    //                     Black,
-    //                     GoldSegmentText)]
-    //         }
-    //     ];
-    // }
-
     var CanvasInfo = function (width, height) {
         this.width = width;
         this.height = height;
@@ -823,11 +620,16 @@ define(['jquery'],function ($) {
         mShotPositions.push(new Shot(x, y, 2));
         drawHits(mShotPositions);
 
+        fireHitsChanged();
         //dispatchHitsChanged({ "targetcontrol": this/*targetControl*/ });
-        dispatchHitsChanged({ "getShots": getShots/*targetControl*/,"getTargetSegments":/*getTargetSegments*/getTargetControlDescription });
+        //dispatchHitsChanged({ "getShots": getShots/*targetControl*/,"getTargetSegments":/*getTargetSegments*/getTargetControlDescription });
         /*if (this._hitsChangedEvent != null) {
             this._hitsChangedEvent(this, 42);
         }*/
+    }
+
+    var fireHitsChanged=function(){
+        dispatchHitsChanged({ "getShots": getShots/*targetControl*/,"getTargetSegments":/*getTargetSegments*/getTargetControlDescription });
     }
 
     var onTimerMouseOutOfElement = function () {
@@ -870,6 +672,7 @@ define(['jquery'],function ($) {
     return {
         initialize: initialize,
         on: on,
-        getShots: getShots
+        getShots: getShots,
+        notifyTargetControlDescriptionChanged:notifyTargetControlDescriptionChanged
     }
 });

@@ -20,6 +20,25 @@ requirejs(["jquery","targetctrl2","resulttable2","targetctrldata"],
     //util's dependencies have loaded, and the util argument will hold
     //the module value for "helper/util".
 
+    function updateTargetSelectionCombobox(targetList){
+        var combobox=$('#targetselectcombo');
+        combobox.empty();
+        $.each(targetList,function(i,p){
+            combobox.append($('<option></option>').val(p).html(p));
+        });
+
+        /*var combobox=document.getElementById('targetselectcombo');
+        combobox.c
+        for (var i=0;i<targetList.length;++i)
+        {
+            var t=targetList[i];
+            var el=document.createElement("option");
+            el.textContent=t;
+            el.value=t;
+            combobox.appendChild(el);
+        }*/
+    }
+
     //window.onload = () => {
     $( function(){
         //var el =  $("#myCanvas");
@@ -38,13 +57,15 @@ requirejs(["jquery","targetctrl2","resulttable2","targetctrldata"],
         el.setAttribute('width', w + 'px');
         el.setAttribute('height', h + 'px');
 
+        var targetName = "1To10";
+
 
         targetControl.initialize(
             'myCanvas',
             'mySvg',
             function(){
                 //return targetctrldata.getTarget("1To10");
-                return targetctrldata.getTarget("3Spots");
+                return targetctrldata.getTarget(targetName/*"3Spots"*/);
             });
         targetControl.on("hitsChanged",function(){console.log("HITS CHANGED");});
         // alert("HELLO");
@@ -59,6 +80,15 @@ requirejs(["jquery","targetctrl2","resulttable2","targetctrldata"],
         function(tableChgInfo){shotResultTable.onTableChanged(tableChgInfo);}
          );
         }());
+
+        updateTargetSelectionCombobox(targetctrldata.getTargetList());
+        $('#targetselectcombo').change(function(event,ui)
+        {
+            targetName=this.value;
+            targetControl.notifyTargetControlDescriptionChanged();
+            //console.log("SELECTED:"+this.value);
+        });
+
        // (function(targetCtrl){table.onTableChanged(targetCtrl);}){}());
     });
 
