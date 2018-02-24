@@ -10,11 +10,19 @@ requirejs.config({
         // js/lib/jquery-1.9.0.js, relative to
         // the HTML page.
         jquery: 'lib/jquery',
+        tables:'http://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min'
+        
+    },
+    shim:
+    {
+        tables:['jquery']
     }
 });
 
-requirejs(["jquery","targetctrl2","resulttable2","targetctrldata"], 
-    function($,targetControl,shotResultTable,targetctrldata) {
+
+
+requirejs(["jquery","targetctrl2","resulttable2","targetctrldata","tables"], 
+    function($,targetControl,shotResultTable,targetctrldata,jqueryTables) {
     //This function is called when scripts/helper/util.js is loaded.
     //If util.js calls define(), then this function is not fired until
     //util's dependencies have loaded, and the util argument will hold
@@ -90,6 +98,19 @@ requirejs(["jquery","targetctrl2","resulttable2","targetctrldata"],
         });
 
        // (function(targetCtrl){table.onTableChanged(targetCtrl);}){}());
+
+      /* $('#resultTable').DataTable({
+            data:[
+                new ResultTableRow(3,"ABC"),
+                new ResultTableRow(4,"KOL"),
+                new ResultTableRow(8,"OILKJ")
+            ],
+            columns:[
+                { data:'score'},
+                { data:'pos'}
+            ]
+       });*/
+    
     });
 
     return;

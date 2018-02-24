@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <title>Archery-Control (2)</title>
@@ -12,20 +13,22 @@
 </head>
 
 <style>
-    #myCanvas{
+    #myCanvas {
         border: 1px solid blue;
     }
 </style>
 
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css"/>
+ 
 <body>
     <h1>Archery-Control (2)</h1>
 
-    
+
     <div id="targetDiv" style="touch-action: none;position: relative;" width="512" height="512">
-        <canvas id="myCanvas" style="touch-action: none;" ></canvas>
+        <canvas id="myCanvas" style="touch-action: none;"></canvas>
 
         <!--<canvas id="myCanvas2" width="800" height="800"></canvas>-->
-        
+
         <!-- https://stackoverflow.com/questions/5971320/svg-image-is-not-cropped-in-ie9 -->
         <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="mySvg" width="0" height="0" style="touch-action: none;position: absolute; left: 0px; top: 0px; z-index: 2; width: 0px;height: 0px; pointer-events: none; overflow: hidden;">
             <defs>
@@ -45,17 +48,17 @@
                 </g>
 
             </defs>
-            
+
             <!-- the hit-marks will be added here by code -->
-            <g id="hits"/>
-            
+            <g id="hits" />
+
             <!--<g style="clip-path: url(#clipPath);">
                 <g transform="scale(1024,1024)">
                     <use xlink:href="#shape" transform="translate(1,1) scale(0.1,0.1) "/>
                 </g>
             </g>-->
             <g id="crosshairGroup" transform="scale(0,0)">
-                <use xlink:href="#crosshair" transform="translate(0.5,0.5) scale(0.1,0.1) "/>
+                <use xlink:href="#crosshair" transform="translate(0.5,0.5) scale(0.1,0.1) " />
             </g>
         </svg>
     </div>
@@ -67,25 +70,30 @@
 
     <div id="resultTableDiv">
         <table id="resultTable" style="width:100%">
-            <tr>
-              <th>Score</th>
-              <th>Position</th> 
-            </tr>
-            <tr>
-              <td>8</td>
-              <td>x:0.4 y:0.5</td> 
-            </tr>
-          </table> 
+            <thead>
+                <tr>
+                    <th>Score</th>
+                    <th>Position</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>8</td>
+                    <td>x:0.4 y:0.5</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <script data-main="../javascripts/main" src="../javascripts/require.js" async>
     </script>
 
-<!--    var scriptTag = document.createElement("script");
+    <!--    var scriptTag = document.createElement("script");
         scriptTag.type = "text/javascript";
         scriptTag.src = "lib/Require/require.js";
         scriptTag.setAttribute("data-main", "js/main");
         ( document.getElementsByTagName("head")[0] || document.documentElement ).appendChild( scriptTag ); -->
 
 </body>
+
 </html>

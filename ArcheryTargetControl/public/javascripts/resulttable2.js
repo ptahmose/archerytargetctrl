@@ -1,19 +1,42 @@
 "use strict";
 //var shotResultTable = (function () {
-define(function (require){    
+define(["require","jquery","tables"],function (require,$,tables){   
+    
+    //--------------------------------------------------------------------------------
+    function ResultTableRow(score,pos)
+    {
+        this.score = score;
+        this.pos = pos;
+    }
+    //--------------------------------------------------------------------------------
 
     var targetctrldata = require("targetctrldata");
 
 
-    var mHtmlElement;
+    var mTable;
+    var mData;
 
     var initialize = function (htmlElement) {
-        mHtmlElement = htmlElement;
+        /*mHtmlElement = htmlElement;
         var row = mHtmlElement.insertRow(-1);
         var dataCell = row.insertCell(-1);
         dataCell.innerHTML = "ABC";
         dataCell = row.insertCell(-1);
-        dataCell.innerHTML = "XYZ";
+        dataCell.innerHTML = "XYZ";*/
+        mData=[
+            new ResultTableRow(3,"ABC"),
+            new ResultTableRow(4,"KOL"),
+            new ResultTableRow(8,"OILKJ")
+        ];
+
+        //mTable=$('#resultTable');
+        mTable=$('#resultTable').DataTable({
+            data:mData,
+            columns:[
+                { data:'score'},
+                { data:'pos'}
+            ]
+       });
     }
 
     var onTableChanged = function (tableChgInfo) {
@@ -24,20 +47,27 @@ define(function (require){
         var shots=getShotsFunc();
         var targetSegments=tableChgInfo["getTargetSegments"]();
         addRows(shots,targetSegments);
+
+        mTable.clear().rows.add(mData).draw();
+        //mTable.draw();
     }
 
     var clearTableContent=function(){
-        let start = mHtmlElement.rows.length - 1;
+        mData=[];
+        /*let start = mHtmlElement.rows.length - 1;
         if (start >= 1) {
             for (var i = start; i > 0; --i) {
                 mHtmlElement.deleteRow(i);
             }
-        }
+        }*/
     }
 
     var addRows=function(shots,segments){
         shots.forEach(element => {
-            var row = mHtmlElement.insertRow(-1);
+            var score = targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);
+            var pos = element.xNormalized+","+element.yNormalized;
+            mData.push(new ResultTableRow(score,pos));
+            /*var row = mHtmlElement.insertRow(-1);
             var dataCell = row.insertCell(-1);
             //dataCell.innerHTML = element.score.toString();
             var score = targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);
@@ -45,7 +75,7 @@ define(function (require){
             dataCell = row.insertCell(-1);
             dataCell.innerHTML = element.xNormalized+","+element.yNormalized;
 
-            targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);
+            targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);*/
         });
     }
 
