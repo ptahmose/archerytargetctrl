@@ -113,37 +113,21 @@ define(['jquery'],function ($) {
         stopHiliteAnimations();
         while (mHitGroup.firstChild) { mHitGroup.removeChild(mHitGroup.firstChild); }
 
-        var i=0;
-        for (var i=0;i<hitCoordinates.length;++i){
-        //hitCoordinates.forEach((v) => {
+        var l=hitCoordinates.length;
+        for (var i=0;i<l;++i){
             var v = hitCoordinates[i];
             var group =  document.createElementNS("http://www.w3.org/2000/svg", 'g');
             group.setAttribute('id',"ghit"+i.toString());
-            //group.setAttribute('class','H')
-
-            /*var aniTrans = document.createElementNS("http://www.w3.org/2000/svg", 'animateTransform');
-            aniTrans.setAttribute('attributeName','transform');
-            aniTrans.setAttribute('attributeType','xml');
-            aniTrans.setAttribute('type','scale');
-            aniTrans.setAttribute('from','1');
-            aniTrans.setAttribute('to','2');
-            aniTrans.setAttribute('dur','2s');
-            aniTrans.setAttribute('repeatCount','indefinite');
-            group.appendChild(aniTrans);*/
-
 
             var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
             hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
             hit.setAttribute('id','hit'+i.toString());
             hit.setAttribute('class',"HitShapeClass");
-            //hit.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
+
             group.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
 
             group.appendChild(hit);
             mHitGroup.appendChild(group);
-
-            //mHitGroup.appendChild(hit);
-           // ++i;
         };
     }
 
@@ -329,7 +313,6 @@ define(['jquery'],function ($) {
             mZoomAnimation.stop();
         }
 
-        //runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function() { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
     }
 
@@ -425,8 +408,6 @@ define(['jquery'],function ($) {
         var diff = { x: pos.x - centerPos.x, y: pos.y - centerPos.y };
         var normalized = { x: diff.x / rect.width + 0.5, y: diff.y / rect.height + 0.5 };
         return normalized;
-        //var coord={x:normalized.x/10+mZoomCenterPos.x/getCanvasWidth(),y:normalized.y/10+mZoomCenterPos.y/getCanvasHeight()};
-        //return coord;
     }
 
 
@@ -455,7 +436,6 @@ define(['jquery'],function ($) {
                 mZoomAnimation.stop();
             }
 
-            //runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
             runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function() { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         }
 
@@ -716,42 +696,28 @@ define(['jquery'],function ($) {
         var allCurHilited = $('.HitShapeClassHilite');
         allCurHilited.attr('class',"HitShapeClass");
         allCurHilited.stop();
-        var h = $('#hit'+list.toString());
-        h.attr('class',"HitShapeClassHilite");
-        //h.attr('transform',"scale(2)");
-       // var g= $('#ghit'+list.toString());
-        //var hiliteAnimation = $({ zyx: 1 });
-       
-        var i=0;
-        animateHiliteHit(h,i);
-       /* h.animate(      { "zyx": 1,
-    }, {
-        duration: 3000,
-        step: function (value) {
-            
-            var s = (1+value).toString();
-            console.log(s);
-            this.setAttribute("transform", "scale(" + s + ")");
-        },
-        complete: function (now) {
+
+        var selector;
+        if ($.isArray(list)){
+            for (var i=0;i<list.length;++i){
+                if (i!=0){selector+=",";}
+                else{selector='';}
+                selector+='#hit'+list[i].toString();
+            }
         }
-    });*/
-
-        /*h.css({stroke: '#ffffff'});
-        h.children().css({stroke: '#ffffff'});*/
-      /*  $('#hit0').css({stroke: '#ffffff'});
-        $('#hit0').children().css({stroke: '#ffffff'});*/
+        else{
+            selector='#hit'+list.toString();
+        }
+         
+        var h = $(/*'#hit'+list.toString()*/selector);
+        if (h.length>0)
+        {
+            h.attr('class',"HitShapeClassHilite");
+            var i=0;
+            animateHiliteHit(h,i);
+        }
     }
-
-    // var TargetSegment = function (radius, marginWidth, text, segmentColor, marginColor, textColor,score) {
-    //     this.radius = radius;
-    //     this.marginWidth = marginWidth;
-    //     this.text = text;
-    //     this.segmentColor = segmentColor;
-    //     this.marginColor = marginColor;
-    //     this.textColor = textColor;
-    //     this.score = score;
-    // }
+    
 
     var Shot = function (xNormalized, yNormalized, score) {
         this.xNormalized = xNormalized;
