@@ -112,11 +112,15 @@ define(['jquery'],function ($) {
     var drawHits = function (hitCoordinates) {
         while (mHitGroup.firstChild) { mHitGroup.removeChild(mHitGroup.firstChild); }
 
+        var i=0;
         hitCoordinates.forEach((v) => {
             var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
             hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
+            hit.setAttribute('id','hit'+i.toString());
+            hit.setAttribute('class',"HitShapeClass");
             hit.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
             mHitGroup.appendChild(hit);
+            ++i;
         });
     }
 
@@ -649,6 +653,18 @@ define(['jquery'],function ($) {
         setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
 
+    var setHitsToHilite=function(list){
+        var allCurHilited = $('.HitShapeClassHilite');
+        allCurHilited.attr('class',"HitShapeClass");
+        var h = $('#hit'+list.toString());
+        h.attr('class',"HitShapeClassHilite");
+
+        /*h.css({stroke: '#ffffff'});
+        h.children().css({stroke: '#ffffff'});*/
+      /*  $('#hit0').css({stroke: '#ffffff'});
+        $('#hit0').children().css({stroke: '#ffffff'});*/
+    }
+
     // var TargetSegment = function (radius, marginWidth, text, segmentColor, marginColor, textColor,score) {
     //     this.radius = radius;
     //     this.marginWidth = marginWidth;
@@ -673,6 +689,7 @@ define(['jquery'],function ($) {
         initialize: initialize,
         on: on,
         getShots: getShots,
-        notifyTargetControlDescriptionChanged:notifyTargetControlDescriptionChanged
+        notifyTargetControlDescriptionChanged:notifyTargetControlDescriptionChanged,
+        setHitHilite:setHitsToHilite
     }
 });

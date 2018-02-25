@@ -1,6 +1,6 @@
 "use strict";
 //var shotResultTable = (function () {
-define(["require","jquery","tables"],function (require,$,tables){   
+define(["require","jquery","tables","tablespluginorderneutral"],function (require,$,tables,tablespluginorderneutral){   
     
     //--------------------------------------------------------------------------------
     function ResultTableRow(score,pos)
@@ -15,8 +15,10 @@ define(["require","jquery","tables"],function (require,$,tables){
 
     var mTable;
     var mData;
+    var mHiliteShot;
 
-    var initialize = function (htmlElement) {
+    var initialize = function (htmlElement,funcHilite) {
+        mHiliteShot=funcHilite;
         /*mHtmlElement = htmlElement;
         var row = mHtmlElement.insertRow(-1);
         var dataCell = row.insertCell(-1);
@@ -24,9 +26,9 @@ define(["require","jquery","tables"],function (require,$,tables){
         dataCell = row.insertCell(-1);
         dataCell.innerHTML = "XYZ";*/
         mData=[
-            new ResultTableRow(3,"ABC"),
+           /* new ResultTableRow(3,"ABC"),
             new ResultTableRow(4,"KOL"),
-            new ResultTableRow(8,"OILKJ")
+            new ResultTableRow(8,"OILKJ")*/
         ];
 
         //mTable=$('#resultTable');
@@ -35,8 +37,46 @@ define(["require","jquery","tables"],function (require,$,tables){
             columns:[
                 { data:'score'},
                 { data:'pos'}
-            ]
+            ],
+            select: {
+                style: 'multi'
+             }
        });
+
+       mTable.on( 'click', 'tr', function () {
+        var theRow = $(this).index();
+
+        if ( $(this).hasClass('selected') ) {
+            $(this).removeClass('selected');
+        }
+        else {
+            mTable.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+            mHiliteShot(theRow);
+        }
+        });
+
+        /*mTable.on('select.dt', function(e, dt, type, indexes) {
+            return;
+        });*/
+
+        $('#clearTableSort').on('click',function(){
+            mTable.order.neutral().draw();
+        });
+
+        //create your own click handler for the header
+        // mTable.on( 'click', 'th', function (event) {
+        //     /*var parent = $(event.target).parent();
+        //     var myIndex = $(parent).prevAll().length;*/
+        //     var col_idx =  mTable.column(this).index();
+
+        //     var col = mTable.column(this);
+        //     var order=mTable.order();
+
+        //     console.log('Header '+col_idx+"  "+order+' clicked');
+        //     //here you can trigger a custom event
+        // });
+
     }
 
     var onTableChanged = function (tableChgInfo) {
@@ -48,7 +88,10 @@ define(["require","jquery","tables"],function (require,$,tables){
         var targetSegments=tableChgInfo["getTargetSegments"]();
         addRows(shots,targetSegments);
 
+        // this causes a "redraw" of the table -> https://stackoverflow.com/questions/27778389/how-to-manually-update-datatables-table-with-new-json-data
         mTable.clear().rows.add(mData).draw();
+
+        //mTable.order.neutral().draw();
         //mTable.draw();
     }
 

@@ -10,16 +10,16 @@ requirejs.config({
         // js/lib/jquery-1.9.0.js, relative to
         // the HTML page.
         jquery: 'lib/jquery',
-        tables:'http://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min'
+        tables:'http://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min',
+        tablespluginorderneutral:'https://cdn.datatables.net/plug-ins/1.10.16/api/order.neutral()'
         
     },
     shim:
     {
-        tables:['jquery']
+        tables:['jquery'],
+        tablespluginorderneutral:['tables']
     }
 });
-
-
 
 requirejs(["jquery","targetctrl2","resulttable2","targetctrldata","tables"], 
     function($,targetControl,shotResultTable,targetctrldata,jqueryTables) {
@@ -80,14 +80,19 @@ requirejs(["jquery","targetctrl2","resulttable2","targetctrldata","tables"],
 
         var tableElement = document.getElementById('resultTable');
         
-        (function(){
-        var table = shotResultTable.initialize(tableElement);
+        //(function(){
+        var table = shotResultTable.initialize(tableElement,
+            function(i)
+        {
+            //console.log(i.toString());
+            targetControl.setHitHilite(i);
+        });
         //shotResultTable.onTableChanged({});
         var f = function(targetCtrl){table.onTableChanged(targetCtrl)};
         targetControl.on("hitsChanged",
         function(tableChgInfo){shotResultTable.onTableChanged(tableChgInfo);}
          );
-        }());
+        //}());
 
         updateTargetSelectionCombobox(targetctrldata.getTargetList());
         $('#targetselectcombo').change(function(event,ui)
