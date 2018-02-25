@@ -10,15 +10,21 @@
     <!-- <script data-main="../javascripts/main" src="../javascripts/require.js"/> -->
     <!-- <script src="../javascripts/targetctrl2.js"></script>
     <script src="../javascripts/resulttable2.js"></script> -->
+
+    <style type="text/css">
+        <![CDATA[
+       #myCanvas {
+           border: 1px solid blue;
+       }
+       ]]>
+   </style>
+
+   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css"/>
 </head>
 
-<style>
-    #myCanvas {
-        border: 1px solid blue;
-    }
-</style>
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css"/>
+
+
  
 <body>
     <h1>Archery-Control (2)</h1>
@@ -62,7 +68,7 @@
                   use.HitShapeClassHilite{
                     stroke: green;
                     /*animation: col 1s linear infinite;*/
-                    animation: col 1s linear infinite,hitHiliteTransition 0.5s linear infinite;
+                    animation: col 1s linear infinite/*,hitHiliteTransition 0.5s linear infinite*/;
                    /* transform: scale(2,2)*/
                   }
 
@@ -100,7 +106,7 @@
             </defs>
 
             <!-- the hit-marks will be added here by code -->
-            <g id="hits" />
+            <g id="hits"></g>
 
             <!--<g style="clip-path: url(#clipPath);">
                 <g transform="scale(1024,1024)">
@@ -108,7 +114,8 @@
                 </g>
             </g>-->
             <g id="crosshairGroup" transform="scale(0,0)">
-                <use xlink:href="#crosshair" transform="translate(0.5,0.5) scale(0.1,0.1) " />
+                <use xlink:href="#crosshair" transform="translate(0.5,0.5) scale(0.1,0.1) ">
+                </use>
             </g>
         </svg>
     </div>

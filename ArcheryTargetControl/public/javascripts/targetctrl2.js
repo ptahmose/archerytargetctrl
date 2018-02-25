@@ -110,6 +110,7 @@ define(['jquery'],function ($) {
     }
 
     var drawHits = function (hitCoordinates) {
+        stopHiliteAnimations();
         while (mHitGroup.firstChild) { mHitGroup.removeChild(mHitGroup.firstChild); }
 
         var i=0;
@@ -117,6 +118,17 @@ define(['jquery'],function ($) {
             var group =  document.createElementNS("http://www.w3.org/2000/svg", 'g');
             group.setAttribute('id',"ghit"+i.toString());
             //group.setAttribute('class','H')
+
+            /*var aniTrans = document.createElementNS("http://www.w3.org/2000/svg", 'animateTransform');
+            aniTrans.setAttribute('attributeName','transform');
+            aniTrans.setAttribute('attributeType','xml');
+            aniTrans.setAttribute('type','scale');
+            aniTrans.setAttribute('from','1');
+            aniTrans.setAttribute('to','2');
+            aniTrans.setAttribute('dur','2s');
+            aniTrans.setAttribute('repeatCount','indefinite');
+            group.appendChild(aniTrans);*/
+
 
             var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
             hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
@@ -662,11 +674,64 @@ define(['jquery'],function ($) {
         setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
 
+    function animateHiliteHit(h,i){
+        h.css({ zyx: 0.0 });
+        h.animate({ "zyx": 1}, 
+        {
+        duration: 500,
+        step: function (value) {
+            var s;
+            if (i&1){
+
+            s = (1+value).toString();
+            }
+            else{
+                s = (2-value).toString();
+            }
+           // console.log(s);
+            this.setAttribute("transform", "scale(" + s + ")");
+        },
+        complete: function (now) {
+            i=i^1;
+            animateHiliteHit(h,i);
+        },
+        always: function (now) {
+            this.removeAttribute("transform");
+        }
+    });
+    }
+
+    function stopHiliteAnimations()
+    {
+        var allCurHilited = $('.HitShapeClassHilite');
+        allCurHilited.attr('class',"HitShapeClass");
+        allCurHilited.stop();
+    }
+
     var setHitsToHilite=function(list){
         var allCurHilited = $('.HitShapeClassHilite');
         allCurHilited.attr('class',"HitShapeClass");
+        allCurHilited.stop();
         var h = $('#hit'+list.toString());
         h.attr('class',"HitShapeClassHilite");
+        //h.attr('transform',"scale(2)");
+       // var g= $('#ghit'+list.toString());
+        //var hiliteAnimation = $({ zyx: 1 });
+       
+        var i=0;
+        animateHiliteHit(h,i);
+       /* h.animate(      { "zyx": 1,
+    }, {
+        duration: 3000,
+        step: function (value) {
+            
+            var s = (1+value).toString();
+            console.log(s);
+            this.setAttribute("transform", "scale(" + s + ")");
+        },
+        complete: function (now) {
+        }
+    });*/
 
         /*h.css({stroke: '#ffffff'});
         h.children().css({stroke: '#ffffff'});*/
