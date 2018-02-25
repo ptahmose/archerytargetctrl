@@ -114,12 +114,21 @@ define(['jquery'],function ($) {
 
         var i=0;
         hitCoordinates.forEach((v) => {
+            var group =  document.createElementNS("http://www.w3.org/2000/svg", 'g');
+            group.setAttribute('id',"ghit"+i.toString());
+            //group.setAttribute('class','H')
+
             var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
             hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
             hit.setAttribute('id','hit'+i.toString());
             hit.setAttribute('class',"HitShapeClass");
-            hit.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
-            mHitGroup.appendChild(hit);
+            //hit.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
+            group.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
+
+            group.appendChild(hit);
+            mHitGroup.appendChild(group);
+
+            //mHitGroup.appendChild(hit);
             ++i;
         });
     }
