@@ -114,7 +114,9 @@ define(['jquery'],function ($) {
         while (mHitGroup.firstChild) { mHitGroup.removeChild(mHitGroup.firstChild); }
 
         var i=0;
-        hitCoordinates.forEach((v) => {
+        for (var i=0;i<hitCoordinates.length;++i){
+        //hitCoordinates.forEach((v) => {
+            var v = hitCoordinates[i];
             var group =  document.createElementNS("http://www.w3.org/2000/svg", 'g');
             group.setAttribute('id',"ghit"+i.toString());
             //group.setAttribute('class','H')
@@ -141,8 +143,8 @@ define(['jquery'],function ($) {
             mHitGroup.appendChild(group);
 
             //mHitGroup.appendChild(hit);
-            ++i;
-        });
+           // ++i;
+        };
     }
 
     var setupEvents = function () {
@@ -327,7 +329,8 @@ define(['jquery'],function ($) {
             mZoomAnimation.stop();
         }
 
-        runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+        //runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+        runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function() { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
     }
 
     var onTouchStart = function (ev) {
@@ -452,7 +455,8 @@ define(['jquery'],function ($) {
                 mZoomAnimation.stop();
             }
 
-            runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+            //runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, () => { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+            runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function() { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         }
 
         turnOffTouchTimer();

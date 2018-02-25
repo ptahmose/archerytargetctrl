@@ -106,7 +106,10 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
     }
 
     var addRows=function(shots,segments){
-        shots.forEach(element => {
+        //shots.forEach(element => {
+        for (var i=0;i<shots.length;++i)
+        {
+            var element=shots[i];
             var score = targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);
             var pos = element.xNormalized+","+element.yNormalized;
             mData.push(new ResultTableRow(score,pos));
@@ -119,7 +122,7 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
             dataCell.innerHTML = element.xNormalized+","+element.yNormalized;
 
             targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);*/
-        });
+        };
     }
 
 
