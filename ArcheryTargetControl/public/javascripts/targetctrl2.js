@@ -717,7 +717,21 @@ define(['jquery'],function ($) {
             animateHiliteHit(h,i);
         }
     }
-    
+
+    function removeFromArray(arr,from, to) {    // adapted from https://johnresig.com/blog/javascript-array-remove/
+        var rest = arr.slice((to || from) + 1 || arr.length);
+        arr.length = from < 0 ? arr.length + from : from;
+        return arr.push.apply(arr, rest);
+      };
+
+    var deleteShot=function(index){
+        console.log("Delete Shot Idx="+index);
+        removeFromArray(mShotPositions,index);
+        //mShotPositions.push(new Shot(x, y, 2));
+        drawHits(mShotPositions);
+
+        fireHitsChanged();
+    }
 
     var Shot = function (xNormalized, yNormalized, score) {
         this.xNormalized = xNormalized;
@@ -734,6 +748,7 @@ define(['jquery'],function ($) {
         on: on,
         getShots: getShots,
         notifyTargetControlDescriptionChanged:notifyTargetControlDescriptionChanged,
-        setHitHilite:setHitsToHilite
+        setHitHilite:setHitsToHilite,
+        deleteShot:deleteShot
     }
 });

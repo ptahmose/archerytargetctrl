@@ -17,6 +17,7 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
     var mTable;
     var mData;
     var mHiliteShot;
+    var mDeleteShot;
 
     function updateSelectedRows(table,hiliteShotsFunc)
     {
@@ -30,8 +31,9 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
     }
 
 
-    var initialize = function (htmlElement,funcHilite) {
+    var initialize = function (htmlElement,funcHilite,funcDeleteShot) {
         mHiliteShot=funcHilite;
+        mDeleteShot=funcDeleteShot;
         /*mHtmlElement = htmlElement;
         var row = mHtmlElement.insertRow(-1);
         var dataCell = row.insertCell(-1);
@@ -57,15 +59,16 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
                     render: function(data, type, full, meta)
                     {
                         if(type === 'display'){
-                            return '<button class="btn-view" type="button">Delete</button>';
+                            return '<button class="datatable-delete" type="button">Delete</button>';
                         }
 
                         return data;
                     }
                 }
             ]
-      
        });
+
+ 
 
        mTable.on( 'click', 'tr', function () {
         var theRow = $(this).index();
@@ -78,6 +81,17 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
             $(this).addClass('selected');
             //mHiliteShot(theRow);
         }
+
+        //$('#resultTable tbody .datatable-delete').on('click',function(e){
+        mTable.on('click','tbody .datatable-delete',function(e){
+            var data = mTable.row( $(this).parents('tr') ).data();
+            console.log("DELETE: id="+data.id+" score:"+data.score);
+            mDeleteShot(data.id);
+            // https://stackoverflow.com/questions/5563783/jquery-class-click-multiple-elements-click-event-once
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return;
+        });
 
         updateSelectedRows(mTable,mHiliteShot);
         });

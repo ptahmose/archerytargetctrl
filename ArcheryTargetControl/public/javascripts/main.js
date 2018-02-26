@@ -83,10 +83,15 @@ requirejs(["jquery","targetctrl2","resulttable2","targetctrldata","tables"],
         //(function(){
         var table = shotResultTable.initialize(tableElement,
             function(i)
-        {
-            //console.log(i.toString());
-            targetControl.setHitHilite(i);
-        });
+            {
+                //console.log(i.toString());
+                targetControl.setHitHilite(i);
+            },
+            function(i)
+            {
+                targetControl.deleteShot(i);
+            });
+
         //shotResultTable.onTableChanged({});
         var f = function(targetCtrl){table.onTableChanged(targetCtrl)};
         targetControl.on("hitsChanged",
