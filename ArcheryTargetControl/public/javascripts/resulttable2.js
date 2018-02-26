@@ -49,11 +49,22 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
             data:mData,
             columns:[
                 { data:'score'},
-                { data:'pos'}
-            ],
-            select: {
-                style: 'multi'
-             }
+                { data:'pos'},
+                {
+                    data:'id',
+                    orderable:false,
+                    searchable: false,
+                    render: function(data, type, full, meta)
+                    {
+                        if(type === 'display'){
+                            return '<button class="btn-view" type="button">Delete</button>';
+                        }
+
+                        return data;
+                    }
+                }
+            ]
+      
        });
 
        mTable.on( 'click', 'tr', function () {
