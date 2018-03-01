@@ -15,9 +15,21 @@
        #myCanvas {
            border: 1px solid blue;
        }
+
+        td.details-control {
+            text-align:center;
+            color:forestgreen;
+            cursor: pointer;
+        }
+        tr.shown td.details-control {
+            text-align:center; 
+            color:red;
+        }
+
    </style>
 
    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min.css"/>
+   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 </head>
 
 
@@ -126,6 +138,7 @@
         <table id="resultTable" style="width:100%">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Score</th>
                     <th>Position</th>
                     <th>Id</th>

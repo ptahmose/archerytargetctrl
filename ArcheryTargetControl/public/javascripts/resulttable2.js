@@ -1,10 +1,9 @@
 "use strict";
 //var shotResultTable = (function () {
-define(["require","jquery","tables","tablespluginorderneutral"],function (require,$,tables,tablespluginorderneutral){   
-    
+define(["require", "jquery", "tables", "tablespluginorderneutral"], function (require, $, tables, tablespluginorderneutral) {
+
     //--------------------------------------------------------------------------------
-    function ResultTableRow(id,score,pos)
-    {
+    function ResultTableRow(id, score, pos) {
         this.id = id;
         this.score = score;
         this.pos = pos;
@@ -19,73 +18,96 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
     var mHiliteShot;
     var mDeleteShot;
 
-    function updateSelectedRows(table,hiliteShotsFunc)
-    {
-        var a= [];
-        $.each(table.rows('.selected').data(), function() {
+    function updateSelectedRows(table, hiliteShotsFunc) {
+        var a = [];
+        $.each(table.rows('.selected').data(), function () {
             a.push(this.id);
-            });
+        });
 
         hiliteShotsFunc(a);
-        console.log("Length: "+a.length);
+        console.log("Length: " + a.length);
     }
 
 
-    var initialize = function (htmlElement,funcHilite,funcDeleteShot) {
-        mHiliteShot=funcHilite;
-        mDeleteShot=funcDeleteShot;
+    var initialize = function (htmlElement, funcHilite, funcDeleteShot) {
+        mHiliteShot = funcHilite;
+        mDeleteShot = funcDeleteShot;
         /*mHtmlElement = htmlElement;
         var row = mHtmlElement.insertRow(-1);
         var dataCell = row.insertCell(-1);
         dataCell.innerHTML = "ABC";
         dataCell = row.insertCell(-1);
         dataCell.innerHTML = "XYZ";*/
-        mData=[
-           /* new ResultTableRow(3,"ABC"),
-            new ResultTableRow(4,"KOL"),
-            new ResultTableRow(8,"OILKJ")*/
+        mData = [
+            /* new ResultTableRow(3,"ABC"),
+             new ResultTableRow(4,"KOL"),
+             new ResultTableRow(8,"OILKJ")*/
         ];
 
         //mTable=$('#resultTable');
-        mTable=$('#resultTable').DataTable({
-            data:mData,
-            columns:[
-                { data:'score'},
-                { data:'pos'},
+        mTable = $('#resultTable').DataTable({
+            data: mData,
+            columns: [
                 {
-                    data:'id',
-                    orderable:false,
+                    className: 'details-control',
+                    orderable: false,
                     searchable: false,
-                    render: function(data, type, full, meta)
-                    {
-                        if(type === 'display'){
+                    data: null,
+                    defaultContent: '',
+                    render: function () {
+                        return '<i class="fa fa-plus-square" aria-hidden="true"></i>';
+                    },
+                    width: "15px"
+                },
+                { data: 'score' },
+                { data: 'pos' },
+                {
+                    data: 'id',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, full, meta) {
+                        if (type === 'display') {
                             return '<button class="datatable-delete" type="button">Delete</button>';
                         }
 
                         return data;
                     }
                 }
-            ]
-       });
+            ],
+            "paging": false
+        });
 
- 
 
-       mTable.on( 'click', 'tr', function () {
-        var theRow = $(this).index();
 
-        if ( $(this).hasClass('selected') ) {
-            $(this).removeClass('selected');
-        }
-        else {
-            mTable.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-            //mHiliteShot(theRow);
-        }
+        mTable.on('click', 'tr', function (e) {
+            var theRow = $(this).index();
+            var row = mTable.row(theRow);
 
-        //$('#resultTable tbody .datatable-delete').on('click',function(e){
-        mTable.on('click','tbody .datatable-delete',function(e){
-            var data = mTable.row( $(this).parents('tr') ).data();
-            console.log("DELETE: id="+data.id+" score:"+data.score);
+            if (!$(this).hasClass('details')) {
+                var f = $(this).find('table');
+                if (f != null && !f.hasClass('details')) {
+                    // var firstChild =this.children[0];//.hasClass('details');
+                    if ($(this).hasClass('selected')) {
+                        $(this).removeClass('selected');
+                    }
+                    else {
+                        mTable.$('tr.selected').removeClass('selected');
+                        $(this).addClass('selected');
+                        //mHiliteShot(theRow);
+                    }
+
+                    updateSelectedRows(mTable, mHiliteShot);
+                }
+            }
+/*            else {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }*/
+        });
+
+        mTable.on('click', 'tbody .datatable-delete', function (e) {
+            var data = mTable.row($(this).parents('tr')).data();
+            console.log("DELETE: id=" + data.id + " score:" + data.score);
             mDeleteShot(data.id);
             // https://stackoverflow.com/questions/5563783/jquery-class-click-multiple-elements-click-event-once
             e.stopPropagation();
@@ -93,14 +115,11 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
             return;
         });
 
-        updateSelectedRows(mTable,mHiliteShot);
-        });
-
         /*mTable.on('select.dt', function(e, dt, type, indexes) {
             return;
         });*/
 
-        $('#clearTableSort').on('click',function(){
+        $('#clearTableSort').on('click', function () {
             mTable.order.neutral().draw();
         });
 
@@ -117,16 +136,56 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
         //     //here you can trigger a custom event
         // });
 
+        function format(d) {
+            // `d` is the original data object for the row
+            return '<table class="details" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+                '<tr class="details">' +
+                '<td class="details">Id:</td>' +
+                '<td class="details">' + d.id + '</td>' +
+                '</tr>' +
+                '<tr class="details">' +
+                '<td class="details">Score:</td>' +
+                '<td class="details">' + d.score + '</td>' +
+                '</tr>' +
+                '<tr class="details">' +
+                '<td class="details">Position:</td>' +
+                '<td class="details">' + d.pos + '</td>' +
+                '</tr>' +
+                '</table>';
+        }
+
+
+        // Add event listener for opening and closing details
+        $('#resultTable tbody').on('click', 'td.details-control', function () {
+            var tr = $(this).closest('tr');
+            var tdi = tr.find("i.fa");
+            var row = mTable.row(tr);
+
+            if (row.child.isShown()) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+                tdi.first().removeClass('fa-minus-square');
+                tdi.first().addClass('fa-plus-square');
+            }
+            else {
+                // Open this row
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+                tdi.first().removeClass('fa-plus-square');
+                tdi.first().addClass('fa-minus-square');
+            }
+        });
     }
 
     var onTableChanged = function (tableChgInfo) {
         clearTableContent();
         /*var shotCtrl=tableChgInfo["targetcontrol"];
         var shots = shotCtrl.getShots();*/
-        var getShotsFunc=tableChgInfo["getShots"];
-        var shots=getShotsFunc();
-        var targetSegments=tableChgInfo["getTargetSegments"]();
-        addRows(shots,targetSegments);
+        var getShotsFunc = tableChgInfo["getShots"];
+        var shots = getShotsFunc();
+        var targetSegments = tableChgInfo["getTargetSegments"]();
+        addRows(shots, targetSegments);
 
         // this causes a "redraw" of the table -> https://stackoverflow.com/questions/27778389/how-to-manually-update-datatables-table-with-new-json-data
         mTable.clear().rows.add(mData).draw();
@@ -135,8 +194,8 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
         //mTable.draw();
     }
 
-    var clearTableContent=function(){
-        mData=[];
+    var clearTableContent = function () {
+        mData = [];
         /*let start = mHtmlElement.rows.length - 1;
         if (start >= 1) {
             for (var i = start; i > 0; --i) {
@@ -145,15 +204,14 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
         }*/
     }
 
-    var addRows=function(shots,segments){
+    var addRows = function (shots, segments) {
         //shots.forEach(element => {
-        var shotsLength=shots.length;
-        for (var i=0;i<shotsLength;++i)
-        {
-            var element=shots[i];
-            var score = targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);
-            var pos = element.xNormalized+","+element.yNormalized;
-            mData.push(new ResultTableRow(i,score,pos));
+        var shotsLength = shots.length;
+        for (var i = 0; i < shotsLength; ++i) {
+            var element = shots[i];
+            var score = targetctrldata.determineScore(element.xNormalized, element.yNormalized, segments);
+            var pos = element.xNormalized + "," + element.yNormalized;
+            mData.push(new ResultTableRow(i, score, pos));
             /*var row = mHtmlElement.insertRow(-1);
             var dataCell = row.insertCell(-1);
             //dataCell.innerHTML = element.score.toString();
@@ -161,7 +219,7 @@ define(["require","jquery","tables","tablespluginorderneutral"],function (requir
             dataCell.innerHTML = score!=null?score.toString():"M";
             dataCell = row.insertCell(-1);
             dataCell.innerHTML = element.xNormalized+","+element.yNormalized;
-
+    
             targetctrldata.determineScore(element.xNormalized,element.yNormalized,segments);*/
         };
     }
