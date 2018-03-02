@@ -626,7 +626,7 @@ define(['jquery'],function ($) {
     }
 
     var addShot = function (x, y) {
-        mShotPositions.push(new Shot(x, y, 2));
+        mShotPositions.push(new Shot(x, y, {"datetime":Date(),"creator":"targetControl"}));
         drawHits(mShotPositions);
 
         fireHitsChanged();
@@ -733,10 +733,17 @@ define(['jquery'],function ($) {
         fireHitsChanged();
     }
 
-    var Shot = function (xNormalized, yNormalized, score) {
+    var Shot = function (xNormalized, yNormalized, params) {
         this.xNormalized = xNormalized;
         this.yNormalized = yNormalized;
-        this.score = score;
+        if (params.hasOwnProperty('datetime'))
+        {
+            this.datetime = params.datetime;
+        }
+        if (params.hasOwnProperty('creator'))
+        {
+            this.creator = params.creator;
+        }
     }
 
     var getShots = function () {

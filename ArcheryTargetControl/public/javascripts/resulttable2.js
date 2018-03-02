@@ -3,10 +3,14 @@
 define(["require", "jquery", "tables", "tablespluginorderneutral"], function (require, $, tables, tablespluginorderneutral) {
 
     //--------------------------------------------------------------------------------
-    function ResultTableRow(id, score, pos) {
+    function ResultTableRow(id, score, element) {
         this.id = id;
         this.score = score;
-        this.pos = pos;
+        this.shotElement=element;
+    }
+
+    ResultTableRow.prototype.pos = function(){
+        return this.shotElement.xNormalized.toString()+", "+this.shotElement.yNormalized.toString();
     }
     //--------------------------------------------------------------------------------
 
@@ -137,7 +141,8 @@ define(["require", "jquery", "tables", "tablespluginorderneutral"], function (re
 
         function format(d) {
             // `d` is the original data object for the row
-            return '<table class="details" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+            var htmlText=
+                '<table class="details" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
                 '<tr class="details">' +
                 '<td class="details">Id:</td>' +
                 '<td class="details">' + d.id + '</td>' +
@@ -148,9 +153,17 @@ define(["require", "jquery", "tables", "tablespluginorderneutral"], function (re
                 '</tr>' +
                 '<tr class="details">' +
                 '<td class="details">Position:</td>' +
-                '<td class="details">' + d.pos + '</td>' +
-                '</tr>' +
-                '</table>';
+                '<td class="details">' + d.pos() + '</td>' +
+                '</tr>';
+            if (d.shotElement.hasOwnProperty('datetime'))            {
+                htmlText+=
+                '<tr class="details">' +
+                '<td class="details">Date-Time:</td>' +
+                '<td class="details">' + d.shotElement.datetime + '</td>' +
+                '</tr>';
+            }
+            htmlText+='</table>';
+            return htmlText;
         }
 
 
@@ -210,7 +223,7 @@ define(["require", "jquery", "tables", "tablespluginorderneutral"], function (re
             var element = shots[i];
             var score = targetctrldata.determineScore(element.xNormalized, element.yNormalized, segments);
             var pos = element.xNormalized + "," + element.yNormalized;
-            mData.push(new ResultTableRow(i, score, pos));
+            mData.push(new ResultTableRow(i, score, element));
             /*var row = mHtmlElement.insertRow(-1);
             var dataCell = row.insertCell(-1);
             //dataCell.innerHTML = element.score.toString();
