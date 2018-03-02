@@ -81,7 +81,6 @@ define(["require", "jquery", "tables", "tablespluginorderneutral"], function (re
 
         mTable.on('click', 'tr', function (e) {
             var theRow = $(this).index();
-            var row = mTable.row(theRow);
 
             if (!$(this).hasClass('details')) {
                 var f = $(this).find('table');
