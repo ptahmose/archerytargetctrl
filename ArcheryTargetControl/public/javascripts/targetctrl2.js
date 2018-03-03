@@ -156,7 +156,62 @@ define(['jquery'],function ($) {
         mElement.addEventListener("MSHoldVisual", function (e) {
             e.preventDefault();
         }, false);
+
+        // Register an event listener to call the resizeCanvas() function 
+           // each time the window is resized.
+           window.addEventListener('resize', resizeCtrl, false);
+           // Draw canvas border for the first time.
+        //resizeCtrl();
+        var container = $(mElement).parent();
     }
+
+    var resizeCtrl=function(canvas){
+        var container = $(mElement).parent();
+        var w = container.width();
+        var h = container.height();
+        console.log("W="+w+" H="+h);
+        /*mCanvas.width=512;
+        mCanvas.height=512;*/
+
+        var canvasWidth = Math.min(w,h);
+        var canvasHeight=canvasWidth;
+        var viewportHeight=h;
+        var viewportWidth=w;
+
+        mElement.style.position = "absolute";
+        mElement.setAttribute("width", canvasWidth);
+        mElement.setAttribute("height", canvasHeight);
+        mElement.style.top = (viewportHeight - canvasHeight) / 2 + "px";
+        mElement.style.left = (viewportWidth - canvasWidth) / 2 + "px";
+
+        //mSvgElement.style.position = "absolute";
+        //mSvgElement.setAttribute("width", canvasWidth);
+        //mSvgElement.setAttribute("height", canvasHeight);
+        mSvgElement.style.top = (viewportHeight - canvasHeight) / 2 + "px";
+        mSvgElement.style.left = (viewportWidth - canvasWidth) / 2 + "px";
+        mSvgElement.style.width=canvasWidth+"px";
+        mSvgElement.style.height=canvasHeight+"px";
+
+        var ctx = mElement.getContext("2d");
+        ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
+        paintTarget(ctx);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        mBackupElement = document.createElement("canvas");
+        mBackupElement.width = getCanvasWidth();//this.canvasWidth;
+        mBackupElement.height = getCanvasHeight();//this.canvasHeight;
+        var ctxBackup = mBackupElement.getContext("2d");
+        ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
+
+        //insertHitsGroup();
+        mHitGroup.setAttribute('transform', 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ')');
+        //var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
+        //var h = [];
+        //mShotPositions = h;
+        //drawHits(h);
+
+    }
+
 
     var getMousePos = function (canvas, evt) {
         var rect = canvas.getBoundingClientRect();
