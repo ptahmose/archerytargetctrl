@@ -410,6 +410,26 @@ define(['jquery'],function ($) {
     }
 
     var onKeyDownWindow = function (ev) {
+        /*const zoomlevel=1;
+        $(this).css({
+            "-moz-transform":"scale("+zoomlevel+")",
+            "-webkit-transform":"scale("+zoomlevel+")",
+            "-o-transform":"scale("+zoomlevel+")",
+            "-ms-transform":"scale("+zoomlevel+")"
+        });*/
+
+        // var scale = 'scale(1)';
+        // document.body.style.webkitTransform =  scale;    // Chrome, Opera, Safari
+        //  document.body.style.msTransform =   scale;       // IE 9
+        //  document.body.style.transform = scale;     // General
+
+        //document.body.style.zoom = screen.logicalXDPI / screen.deviceXDPI;
+        // $('meta[name=viewport]').remove();
+        // $('head').append('<meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=0">');
+        // $('meta[name=viewport]').remove();
+        // $('head').append('<meta name="viewport" content="width=device-width, initial-scale=yes">' );
+
+
         if (ev.keyCode == 27 || ev.keyCode == 8) {
             if (mCurInteractionMode != 0/*InteractionMode.Invalid*/) {
                 cancelZoomAddArrowOperation();

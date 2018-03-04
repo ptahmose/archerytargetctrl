@@ -49,6 +49,9 @@ requirejs(["jquery","targetctrl2","resulttable2","targetctrldata","tables"],
 
     //window.onload = () => {
     $( function(){
+        //$(document).on('touchmove', false);
+
+
         //var el =  $("#myCanvas");
         var el = document.getElementById('myCanvas');
         var svg = document.getElementById('mySvg');
