@@ -911,7 +911,18 @@ define(['jquery'],function ($) {
 
     //--------------------------------------
     var onPointerUpWindowPointerApi =function(e){}
-    var onPointerMoveWindowPointerApi =function(e){}
+    var onPointerMoveWindowPointerApi =function(ev){
+        var interactionMode=pointerTypeToInteractionMode(ev);
+        if (mCurMouseInteractionState == interactionMode) {
+            if (mTimerMouseOfElement == null) {
+                mTimerMouseOfElement = window.setInterval(
+                    function () { onTimerMouseOutOfElement(); }, 1000 / FPS_FOR_TIMER_OUTOFELEMENT);
+            }
+
+            var pos = getMousePosNormalized(mElement, ev);
+            mLastMousePosNormalized = pos;
+        }
+    }
 
     var onPointerDownHandlerPointerApi =function(ev){
         var interactionMode=pointerTypeToInteractionMode(ev);
@@ -962,7 +973,11 @@ define(['jquery'],function ($) {
         mLastMousePosNormalized = null;
         mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
     }
-    var onPointerOutHandlerPointerApi =function(e){}
+    var onPointerOutHandlerPointerApi =function(e){
+        if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
+            mCurMouseInteractionState = 1/*MouseInteractionState.OutOfElement*/;
+        }
+    }
 
 
     return {
