@@ -47,6 +47,8 @@ define(['jquery'],function ($) {
         mElement = canvas;
         mSvgElement = svg;
         setupEvents();
+
+        /*
         var ctx = mElement.getContext("2d");
         ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
         paintTarget(ctx);
@@ -63,8 +65,12 @@ define(['jquery'],function ($) {
         var h = [];
         mShotPositions = h;
         drawHits(h);
-
+        */
+        mShotPositions =[];
+        insertHitsGroup();
         mCrosshairElement = mSvgElement.getElementById('crosshairGroup');
+        resize();
+        drawHits(mShotPositions);
     }
 
     var notifyTargetControlDescriptionChanged=function(){
@@ -159,19 +165,73 @@ define(['jquery'],function ($) {
 
         // Register an event listener to call the resizeCanvas() function 
            // each time the window is resized.
-           window.addEventListener('resize', resizeCtrl, false);
+        window.addEventListener('resize', /*resizeCtrl*/resize, false);
            // Draw canvas border for the first time.
         //resizeCtrl();
-        var container = $(mElement).parent();
+        //var container = $(mElement).parent();
+        //container.resize(resize);
     }
 
-    var resizeCtrl=function(canvas){
+    var calcCanvasSizeFromParentContainerSize=function(){
+        var container = $(mElement).parent();
+        var viewportWidth = container.width();
+        var viewportHeight = container.height();
+        var canvasWidth = Math.min(viewportWidth,viewportHeight);
+        var canvasHeight=canvasWidth;
+        return {canvasWidth:canvasWidth,canvasHeight:canvasHeight,top:(viewportHeight - canvasHeight) / 2,left:(viewportWidth - canvasWidth) / 2 };
+    }
+
+    var resize=function(){
+        var size = calcCanvasSizeFromParentContainerSize();
+        mElement.style.position = "absolute";
+        mElement.setAttribute("width", size.canvasWidth);
+        mElement.setAttribute("height", size.canvasHeight);
+        mElement.style.top = size.top + "px";
+        mElement.style.left = size.left + "px";
+
+        mSvgElement.style.width= size.canvasWidth+'px';
+        mSvgElement.style.height=size.canvasHeight+'px';
+        mSvgElement.style.top = size.top + "px";
+        mSvgElement.style.left = size.left + "px";
+
+        var ctx = mElement.getContext("2d");
+        ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
+        paintTarget(ctx);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        mBackupElement = document.createElement("canvas");
+        mBackupElement.width = getCanvasWidth();//this.canvasWidth;
+        mBackupElement.height = getCanvasHeight();//this.canvasHeight;
+        var ctxBackup = mBackupElement.getContext("2d");
+        ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
+
+        mHitGroup.setAttribute('transform', 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ')');
+
+        var t = mCrosshairElement.getAttribute('transform');
+        var re="scale\\((.*?),(.*?)\\)";
+        var found = t.match(re);
+        if (found!=null&&found.length>=3)
+        {
+            var x=parseFloat(found[1]);var y=parseFloat(found[2]);
+            if (x!=0&&y!=0)
+            {
+                var s = 'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ')';
+                var r = t.replace(/scale\(.*?\)/,s);
+                mCrosshairElement.setAttribute('transform',r);
+            }
+        }
+    }
+
+  /*  var resizeCtrl=function(canvas){
         var container = $(mElement).parent();
         var w = container.width();
         var h = container.height();
         console.log("W="+w+" H="+h);
-        /*mCanvas.width=512;
-        mCanvas.height=512;*/
+
+        if (w==mElement.width&&h==mElement.height){
+            return;
+        }
+
 
         var canvasWidth = Math.min(w,h);
         var canvasHeight=canvasWidth;
@@ -189,8 +249,8 @@ define(['jquery'],function ($) {
         //mSvgElement.setAttribute("height", canvasHeight);
         mSvgElement.style.top = (viewportHeight - canvasHeight) / 2 + "px";
         mSvgElement.style.left = (viewportWidth - canvasWidth) / 2 + "px";
-        mSvgElement.style.width=canvasWidth+"px";
-        mSvgElement.style.height=canvasHeight+"px";
+        mSvgElement.style.width=canvasWidth+'px';
+        mSvgElement.style.height=canvasHeight+'px';
 
         var ctx = mElement.getContext("2d");
         ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
@@ -210,7 +270,7 @@ define(['jquery'],function ($) {
         //mShotPositions = h;
         //drawHits(h);
 
-    }
+    }*/
 
 
     var getMousePos = function (canvas, evt) {
