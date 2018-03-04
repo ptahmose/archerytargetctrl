@@ -138,25 +138,37 @@ define(['jquery'],function ($) {
     }
 
     var setupEvents = function () {
-        mElement.addEventListener("mousedown", onMouseDownHandler);
-        mElement.addEventListener("mouseup", onMouseUpHandler);
-        mElement.addEventListener("mousemove", onMouseMoveHandler);
-        mElement.addEventListener("mouseout", onMouseOutHandler);
+        if (window.PointerEvent)
+        {
+            // see https://docs.microsoft.com/en-us/microsoft-edge/dev-guide/dom/pointer-events#controlling-for-default-touch-handling
+            window.addEventListener("pointerup", onPointerUpWindowPointerApi);
+            window.addEventListener("pointermove", onPointerMoveWindowPointerApi);
 
-        window.addEventListener("mouseup", onMouseUpWindow);
-        window.addEventListener("mousemove", onMouseMoveWindow);
+            mElement.addEventListener("pointerdown", onPointerDownHandlerPointerApi);
+            mElement.addEventListener("pointerup", onPointerUpHandlerPointerApi);
+            mElement.addEventListener("pointermove", onPointerMoveHandlerPointerApi);
+            mElement.addEventListener("pointerout", onPointerOutHandlerPointerApi);
+        }
+        else {
+            mElement.addEventListener("mousedown", onMouseDownHandler);
+            mElement.addEventListener("mouseup", onMouseUpHandler);
+            mElement.addEventListener("mousemove", onMouseMoveHandler);
+            mElement.addEventListener("mouseout", onMouseOutHandler);
+
+            window.addEventListener("mouseup", onMouseUpWindow);
+            window.addEventListener("mousemove", onMouseMoveWindow);
+
+            mElement.addEventListener("touchstart", onTouchStart);
+            mElement.addEventListener("touchmove", onTouchMove);
+            mElement.addEventListener("touchend", onTouchEnd);
+            mElement.addEventListener("ontouchcancel", onTouchCancel);
+
+            mElement.addEventListener("pointerdown", onPointerDown, false);
+
+        }
+
         window.addEventListener("keydown", onKeyDownWindow);
-
-        mElement.addEventListener("touchstart", onTouchStart);
-        mElement.addEventListener("touchmove", onTouchMove);
-        mElement.addEventListener("touchend", onTouchEnd);
-        mElement.addEventListener("ontouchcancel", onTouchCancel);
-
-        mElement.addEventListener("pointerdown", onPointerDown, false);
-
-        mElement.addEventListener("contextmenu", function (e) {
-            e.preventDefault();
-        }, true);
+        mElement.addEventListener("contextmenu", function (e) {e.preventDefault();}, true);
 
         // this prevents the "hold-visual" from appearing (works only on Edge, cf. https://stackoverflow.com/questions/46714590/how-to-remove-default-box-outline-animation-in-chrome-on-touchstart-hold?noredirect=1&lq=1)
         mElement.addEventListener("MSHoldVisual", function (e) {
@@ -601,6 +613,18 @@ define(['jquery'],function ($) {
         //console.log("Touch cancel");
     }
 
+    function pointerTypeToInteractionMode(ev){
+        switch (ev.pointerType) {
+            case "pen":
+                return 3/*InteractionMode.Stylus*/;
+            case "touch":
+                return 2/*InteractionMode.Touch*/;
+            case "mouse":
+                return 1/*InteractionMode.Touch*/;
+        }
+        return 0;
+    }
+
     /**
      * This event (from the "new" HTML5-pointer-API) is used to determine whether a mouse-interaction,
      * touch- or stylus-interaction is initiated. With touchStart/.. it is impossible to distinguish
@@ -884,6 +908,62 @@ define(['jquery'],function ($) {
     var getShots = function () {
         return mShotPositions;
     }
+
+    //--------------------------------------
+    var onPointerUpWindowPointerApi =function(e){}
+    var onPointerMoveWindowPointerApi =function(e){}
+
+    var onPointerDownHandlerPointerApi =function(ev){
+        var interactionMode=pointerTypeToInteractionMode(ev);
+        if (mZoomAnimation != null) {
+            mZoomAnimation.stop();
+        }
+
+
+        runZoomInAnimation(ev, mCurZoom, 0.1);
+        mCurInteractionMode = interactionMode;//1 /*InteractionMode.Mouse*/;
+        ev.preventDefault();
+    }
+    var onPointerUpHandlerPointerApi =function(ev){
+        var interactionMode=pointerTypeToInteractionMode(ev);
+        if (mCurInteractionMode == interactionMode) {
+            if (mZoomAnimation != null) {
+                mZoomAnimation.stop();
+            }
+
+            var pos = getMousePosNormalized(mElement, ev);
+            var posTransformed = transformToUnzoomedNormalized(pos);
+            addShot(posTransformed.x, posTransformed.y);
+            runZoomInAnimation(ev, mCurZoom, 1,
+                function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+        }
+    }
+    var onPointerMoveHandlerPointerApi =function(ev){
+        var interactionMode=pointerTypeToInteractionMode(ev);
+        ev.preventDefault();
+        if (interactionMode!=mCurInteractionMode){
+            return;
+        }
+
+        var pos = getMousePos(mElement, ev);
+
+        var transX = (pos.x - getCanvasWidth() / 2) / getCanvasWidth();
+        var transY = (pos.y - getCanvasHeight() / 2) / getCanvasHeight();
+        mCrosshairElement.setAttribute(
+                'transform',
+                'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ') translate(' + transX + ',' + transY + ') ');
+       
+
+        if (mTimerMouseOfElement != null) {
+            window.clearInterval(mTimerMouseOfElement);
+            mTimerMouseOfElement = null;
+        }
+
+        mLastMousePosNormalized = null;
+        mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
+    }
+    var onPointerOutHandlerPointerApi =function(e){}
+
 
     return {
         initialize: initialize,
