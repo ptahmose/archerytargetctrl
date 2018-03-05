@@ -537,7 +537,7 @@ define(['jquery'], function ($) {
         var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
         return { x: pos.x, y: pos.y - getTouchOffset() };
     }
-    var getOffsetedTouchPosXY = function (clientX,clientY) {
+    var getOffsetedTouchPosXY = function (clientX, clientY) {
         var rect = mElement.getBoundingClientRect();
         var pos = { x: clientX - rect.left, y: clientY - rect.top };
         return { x: pos.x, y: pos.y - getTouchOffset() };
@@ -552,7 +552,7 @@ define(['jquery'], function ($) {
         var normalized = { x: diff.x / rect.width, y: diff.y / rect.height };
         return [{ x: pos.x, y: pos.y - getTouchOffset() }, normalized];
     }
-    var getOffsetedTouchPosAndNormalizedPosXY = function (clientX,clientY) {
+    var getOffsetedTouchPosAndNormalizedPosXY = function (clientX, clientY) {
         // the normalized coordinate is in the range -0.5 - 0.5
         var rect = mElement.getBoundingClientRect();
         var pos = { x: clientX - rect.left, y: clientY - rect.top };
@@ -566,6 +566,14 @@ define(['jquery'], function ($) {
     var getNormalizedOffsetedTouchHaircrossPosition = function (evTouchList) {
         var rect = mElement.getBoundingClientRect();
         var pos = { x: evTouchList[0].clientX - rect.left, y: evTouchList[0].clientY - rect.top - getTouchOffset() };
+        var centerPos = { x: rect.width / 2, y: rect.height / 2 };
+        var diff = { x: pos.x - centerPos.x, y: pos.y - centerPos.y };
+        var normalized = { x: diff.x / rect.width + 0.5, y: diff.y / rect.height + 0.5 };
+        return normalized;
+    }
+    var getNormalizedOffsetedTouchHaircrossPositionXY = function (clientX,clientY) {
+        var rect = mElement.getBoundingClientRect();
+        var pos = { x: clientX - rect.left, y: clientY - rect.top - getTouchOffset() };
         var centerPos = { x: rect.width / 2, y: rect.height / 2 };
         var diff = { x: pos.x - centerPos.x, y: pos.y - centerPos.y };
         var normalized = { x: diff.x / rect.width + 0.5, y: diff.y / rect.height + 0.5 };
@@ -948,15 +956,15 @@ define(['jquery'], function ($) {
 
             // now we are only interested in this mode - either mouse, touch or stylus and nothing else
             mCurInteractionMode = interactionMode;//1 /*InteractionMode.Mouse*/;
-            if (mCurInteractionMode==2){
+            if (mCurInteractionMode == 2) {
                 // in case of touch - set the crosshair above the finger
-                var pos = getOffsetedTouchPosXY(ev.clientX,ev.clientY);
+                var pos = getOffsetedTouchPosXY(ev.clientX, ev.clientY);
                 mCrosshairElement.setAttribute('transform',
                     'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
-    
+
                 runZoomInAnimation_({ x: pos.x, y: pos.y + getTouchOffset() * (1 + 0.1) }, mCurZoom, 0.1);
             }
-            else{
+            else {
                 runZoomInAnimation(ev, mCurZoom, 0.1);
             }
 
@@ -966,16 +974,43 @@ define(['jquery'], function ($) {
 
     var onPointerUpHandlerPointerApi = function (ev) {
         var interactionMode = pointerTypeToInteractionMode(ev);
+        var zoomInActionWasStillActive = false;
+        if (mZoomAnimation != null) {
+            zoomInActionWasStillActive = true;
+        }
+        
         if (mCurInteractionMode == interactionMode) {
             if (mZoomAnimation != null) {
                 mZoomAnimation.stop();
             }
 
-            var pos = getMousePosNormalized(mElement, ev);
-            var posTransformed = transformToUnzoomedNormalized(pos);
-            addShot(posTransformed.x, posTransformed.y);
-            runZoomInAnimation(ev, mCurZoom, 1,
-                function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+            if (mCurInteractionMode != 2) {
+                var pos = getMousePosNormalized(mElement, ev);
+                var posTransformed = transformToUnzoomedNormalized(pos);
+                addShot(posTransformed.x, posTransformed.y);
+                runZoomInAnimation(ev, mCurZoom, 1,
+                    function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+            }
+            else {
+                runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+                turnOffTouchTimer();
+
+                // only add the shot if the ZoomIn-operation was complete
+                if (zoomInActionWasStillActive == false) {
+                    var pos = getNormalizedOffsetedTouchHaircrossPositionXY(ev.clientX,ev.clientY);
+
+                    var outOfElement = false;
+                    if (pos.x < 0 || pos.x > 1 || pos.y < 0 || pos.y > 1) {
+                        outOfElement = true;
+                    }
+                    //var pos = getMousePosNormalized(mElement, ev);
+                    var posTransformed = transformToUnzoomedNormalized(pos);
+                    //console.log(ev);
+                    if (outOfElement == false) {
+                        addShot(posTransformed.x, posTransformed.y);
+                    }
+                }
+            }
         }
     }
     var onPointerMoveHandlerPointerApi = function (ev) {
@@ -987,7 +1022,7 @@ define(['jquery'], function ($) {
             return;
         }
 
-        if (mCurInteractionMode!=2){
+        if (mCurInteractionMode != 2) {
             var pos = getMousePos(mElement, ev);
             console.log("PointerMove:" + pos.x + " " + pos.y);
             var transX = (pos.x - getCanvasWidth() / 2) / getCanvasWidth();
@@ -1006,7 +1041,7 @@ define(['jquery'], function ($) {
             mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
         }
         else {
-            var pos = getOffsetedTouchPosAndNormalizedPosXY(ev.clientX,ev.clientY);
+            var pos = getOffsetedTouchPosAndNormalizedPosXY(ev.clientX, ev.clientY);
 
             //console.log("x:" + pos[1].x + " y:" + pos[1].y);
             mCrosshairElement.setAttribute('transform',
