@@ -571,7 +571,7 @@ define(['jquery'], function ($) {
         var normalized = { x: diff.x / rect.width + 0.5, y: diff.y / rect.height + 0.5 };
         return normalized;
     }
-    var getNormalizedOffsetedTouchHaircrossPositionXY = function (clientX,clientY) {
+    var getNormalizedOffsetedTouchHaircrossPositionXY = function (clientX, clientY) {
         var rect = mElement.getBoundingClientRect();
         var pos = { x: clientX - rect.left, y: clientY - rect.top - getTouchOffset() };
         var centerPos = { x: rect.width / 2, y: rect.height / 2 };
@@ -935,14 +935,17 @@ define(['jquery'], function ($) {
         if (interactionMode != mCurInteractionMode) {
             return;
         }
-        if (mCurMouseInteractionState == 1) {
-            if (mTimerMouseOfElement == null) {
-                mTimerMouseOfElement = window.setInterval(
-                    function () { onTimerMouseOutOfElement(); }, 1000 / FPS_FOR_TIMER_OUTOFELEMENT);
-            }
 
-            var pos = getMousePosNormalized(mElement, ev);
-            mLastMousePosNormalized = pos;
+        if (mCurInteractionMode == 1) {
+            if (mCurMouseInteractionState == 1) {
+                if (mTimerMouseOfElement == null) {
+                    mTimerMouseOfElement = window.setInterval(
+                        function () { onTimerMouseOutOfElement(); }, 1000 / FPS_FOR_TIMER_OUTOFELEMENT);
+                }
+
+                var pos = getMousePosNormalized(mElement, ev);
+                mLastMousePosNormalized = pos;
+            }
         }
     }
 
@@ -978,7 +981,7 @@ define(['jquery'], function ($) {
         if (mZoomAnimation != null) {
             zoomInActionWasStillActive = true;
         }
-        
+
         if (mCurInteractionMode == interactionMode) {
             if (mZoomAnimation != null) {
                 mZoomAnimation.stop();
@@ -997,7 +1000,7 @@ define(['jquery'], function ($) {
 
                 // only add the shot if the ZoomIn-operation was complete
                 if (zoomInActionWasStillActive == false) {
-                    var pos = getNormalizedOffsetedTouchHaircrossPositionXY(ev.clientX,ev.clientY);
+                    var pos = getNormalizedOffsetedTouchHaircrossPositionXY(ev.clientX, ev.clientY);
 
                     var outOfElement = false;
                     if (pos.x < 0 || pos.x > 1 || pos.y < 0 || pos.y > 1) {
