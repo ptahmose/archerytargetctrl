@@ -1,6 +1,6 @@
 "use strict";
 //var targetControl = (function () {
-define(['jquery'],function ($) {    
+define(['jquery'], function ($) {
     var mElement;
     var mSvgElement;
     var mCurZoom = 1;
@@ -39,8 +39,8 @@ define(['jquery'],function ($) {
     var getTargetControlDescription;
 
     // public
-    var initialize = function (idOfCanvasElement, idOfSVGElement,getTargetControlDescription_) {
-        getTargetControlDescription=getTargetControlDescription_;
+    var initialize = function (idOfCanvasElement, idOfSVGElement, getTargetControlDescription_) {
+        getTargetControlDescription = getTargetControlDescription_;
         mHitsChangedHandlers = [];
         var canvas = document.getElementById(idOfCanvasElement);
         var svg = document.getElementById(idOfSVGElement);
@@ -66,14 +66,14 @@ define(['jquery'],function ($) {
         mShotPositions = h;
         drawHits(h);
         */
-        mShotPositions =[];
+        mShotPositions = [];
         insertHitsGroup();
         mCrosshairElement = mSvgElement.getElementById('crosshairGroup');
         resize();
         drawHits(mShotPositions);
     }
 
-    var notifyTargetControlDescriptionChanged=function(){
+    var notifyTargetControlDescriptionChanged = function () {
         // here we re-draw the canvas (with a potentially new TargetControlDescription)
         var ctx = mElement.getContext("2d");
         ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
@@ -119,16 +119,16 @@ define(['jquery'],function ($) {
         stopHiliteAnimations();
         while (mHitGroup.firstChild) { mHitGroup.removeChild(mHitGroup.firstChild); }
 
-        var l=hitCoordinates.length;
-        for (var i=0;i<l;++i){
+        var l = hitCoordinates.length;
+        for (var i = 0; i < l; ++i) {
             var v = hitCoordinates[i];
-            var group =  document.createElementNS("http://www.w3.org/2000/svg", 'g');
-            group.setAttribute('id',"ghit"+i.toString());
+            var group = document.createElementNS("http://www.w3.org/2000/svg", 'g');
+            group.setAttribute('id', "ghit" + i.toString());
 
             var hit = document.createElementNS("http://www.w3.org/2000/svg", 'use');
             hit.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#shape');
-            hit.setAttribute('id','hit'+i.toString());
-            hit.setAttribute('class',"HitShapeClass");
+            hit.setAttribute('id', 'hit' + i.toString());
+            hit.setAttribute('class', "HitShapeClass");
 
             group.setAttribute('transform', 'translate(' + v.xNormalized.toString() + ',' + v.yNormalized.toString() + ') scale(0.1,0.1)');
 
@@ -138,8 +138,7 @@ define(['jquery'],function ($) {
     }
 
     var setupEvents = function () {
-        if (window.PointerEvent)
-        {
+        if (window.PointerEvent) {
             // see https://docs.microsoft.com/en-us/microsoft-edge/dev-guide/dom/pointer-events#controlling-for-default-touch-handling
             window.addEventListener("pointerup", onPointerUpWindowPointerApi);
             window.addEventListener("pointermove", onPointerMoveWindowPointerApi);
@@ -149,8 +148,8 @@ define(['jquery'],function ($) {
             mElement.addEventListener("pointerup", onPointerUpHandlerPointerApi);
             mElement.addEventListener("pointermove", onPointerMoveHandlerPointerApi);
             mElement.addEventListener("pointerout", onPointerOutHandlerPointerApi);
-            mElement.addEventListener("pointercancel",onPointerCancelHandlerPointerApi)
-            mElement.addEventListener("pointerleave",onPointerLeaveHandlerPointerApi)
+            mElement.addEventListener("pointercancel", onPointerCancelHandlerPointerApi)
+            mElement.addEventListener("pointerleave", onPointerLeaveHandlerPointerApi)
         }
         else {
             mElement.addEventListener("mousedown", onMouseDownHandler);
@@ -171,7 +170,7 @@ define(['jquery'],function ($) {
         }
 
         window.addEventListener("keydown", onKeyDownWindow);
-        mElement.addEventListener("contextmenu", function (e) {e.preventDefault();}, true);
+        mElement.addEventListener("contextmenu", function (e) { e.preventDefault(); }, true);
 
         // this prevents the "hold-visual" from appearing (works only on Edge, cf. https://stackoverflow.com/questions/46714590/how-to-remove-default-box-outline-animation-in-chrome-on-touchstart-hold?noredirect=1&lq=1)
         mElement.addEventListener("MSHoldVisual", function (e) {
@@ -179,24 +178,24 @@ define(['jquery'],function ($) {
         }, false);
 
         // Register an event listener to call the resizeCanvas() function 
-           // each time the window is resized.
+        // each time the window is resized.
         window.addEventListener('resize', /*resizeCtrl*/resize, false);
-           // Draw canvas border for the first time.
+        // Draw canvas border for the first time.
         //resizeCtrl();
         //var container = $(mElement).parent();
         //container.resize(resize);
     }
 
-    var calcCanvasSizeFromParentContainerSize=function(){
+    var calcCanvasSizeFromParentContainerSize = function () {
         var container = $(mElement).parent();
         var viewportWidth = container.width();
         var viewportHeight = container.height();
-        var canvasWidth = Math.min(viewportWidth,viewportHeight);
-        var canvasHeight=canvasWidth;
-        return {canvasWidth:canvasWidth,canvasHeight:canvasHeight,top:(viewportHeight - canvasHeight) / 2,left:(viewportWidth - canvasWidth) / 2 };
+        var canvasWidth = Math.min(viewportWidth, viewportHeight);
+        var canvasHeight = canvasWidth;
+        return { canvasWidth: canvasWidth, canvasHeight: canvasHeight, top: (viewportHeight - canvasHeight) / 2, left: (viewportWidth - canvasWidth) / 2 };
     }
 
-    var resize=function(){
+    var resize = function () {
         var size = calcCanvasSizeFromParentContainerSize();
         mElement.style.position = "absolute";
         mElement.setAttribute("width", size.canvasWidth);
@@ -204,8 +203,8 @@ define(['jquery'],function ($) {
         mElement.style.top = size.top + "px";
         mElement.style.left = size.left + "px";
 
-        mSvgElement.style.width= size.canvasWidth+'px';
-        mSvgElement.style.height=size.canvasHeight+'px';
+        mSvgElement.style.width = size.canvasWidth + 'px';
+        mSvgElement.style.height = size.canvasHeight + 'px';
         mSvgElement.style.top = size.top + "px";
         mSvgElement.style.left = size.left + "px";
 
@@ -223,69 +222,67 @@ define(['jquery'],function ($) {
         mHitGroup.setAttribute('transform', 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ')');
 
         var t = mCrosshairElement.getAttribute('transform');
-        var re="scale\\((.*?),(.*?)\\)";
+        var re = "scale\\((.*?),(.*?)\\)";
         var found = t.match(re);
-        if (found!=null&&found.length>=3)
-        {
-            var x=parseFloat(found[1]);var y=parseFloat(found[2]);
-            if (x!=0&&y!=0)
-            {
+        if (found != null && found.length >= 3) {
+            var x = parseFloat(found[1]); var y = parseFloat(found[2]);
+            if (x != 0 && y != 0) {
                 var s = 'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ')';
-                var r = t.replace(/scale\(.*?\)/,s);
-                mCrosshairElement.setAttribute('transform',r);
+                var r = t.replace(/scale\(.*?\)/, s);
+                mCrosshairElement.setAttribute('transform', r);
             }
         }
     }
 
-  /*  var resizeCtrl=function(canvas){
-        var container = $(mElement).parent();
-        var w = container.width();
-        var h = container.height();
-        console.log("W="+w+" H="+h);
-
-        if (w==mElement.width&&h==mElement.height){
-            return;
-        }
-
-
-        var canvasWidth = Math.min(w,h);
-        var canvasHeight=canvasWidth;
-        var viewportHeight=h;
-        var viewportWidth=w;
-
-        mElement.style.position = "absolute";
-        mElement.setAttribute("width", canvasWidth);
-        mElement.setAttribute("height", canvasHeight);
-        mElement.style.top = (viewportHeight - canvasHeight) / 2 + "px";
-        mElement.style.left = (viewportWidth - canvasWidth) / 2 + "px";
-
-        //mSvgElement.style.position = "absolute";
-        //mSvgElement.setAttribute("width", canvasWidth);
-        //mSvgElement.setAttribute("height", canvasHeight);
-        mSvgElement.style.top = (viewportHeight - canvasHeight) / 2 + "px";
-        mSvgElement.style.left = (viewportWidth - canvasWidth) / 2 + "px";
-        mSvgElement.style.width=canvasWidth+'px';
-        mSvgElement.style.height=canvasHeight+'px';
-
-        var ctx = mElement.getContext("2d");
-        ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
-        paintTarget(ctx);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-        mBackupElement = document.createElement("canvas");
-        mBackupElement.width = getCanvasWidth();//this.canvasWidth;
-        mBackupElement.height = getCanvasHeight();//this.canvasHeight;
-        var ctxBackup = mBackupElement.getContext("2d");
-        ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
-
-        //insertHitsGroup();
-        mHitGroup.setAttribute('transform', 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ')');
-        //var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
-        //var h = [];
-        //mShotPositions = h;
-        //drawHits(h);
-
-    }*/
+    /*  var resizeCtrl=function(canvas){
+          var container = $(mElement).parent();
+          var w = container.width();
+          var h = container.height();
+          console.log("W="+w+" H="+h);
+  
+          if (w==mElement.width&&h==mElement.height){
+              return;
+          }
+  
+  
+          var canvasWidth = Math.min(w,h);
+          var canvasHeight=canvasWidth;
+          var viewportHeight=h;
+          var viewportWidth=w;
+  
+          mElement.style.position = "absolute";
+          mElement.setAttribute("width", canvasWidth);
+          mElement.setAttribute("height", canvasHeight);
+          mElement.style.top = (viewportHeight - canvasHeight) / 2 + "px";
+          mElement.style.left = (viewportWidth - canvasWidth) / 2 + "px";
+  
+          //mSvgElement.style.position = "absolute";
+          //mSvgElement.setAttribute("width", canvasWidth);
+          //mSvgElement.setAttribute("height", canvasHeight);
+          mSvgElement.style.top = (viewportHeight - canvasHeight) / 2 + "px";
+          mSvgElement.style.left = (viewportWidth - canvasWidth) / 2 + "px";
+          mSvgElement.style.width=canvasWidth+'px';
+          mSvgElement.style.height=canvasHeight+'px';
+  
+          var ctx = mElement.getContext("2d");
+          ctx.setTransform(getCanvasWidth(), 0, 0, getCanvasHeight(), 0, 0);
+          paintTarget(ctx);
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+  
+          mBackupElement = document.createElement("canvas");
+          mBackupElement.width = getCanvasWidth();//this.canvasWidth;
+          mBackupElement.height = getCanvasHeight();//this.canvasHeight;
+          var ctxBackup = mBackupElement.getContext("2d");
+          ctxBackup.drawImage(mElement, 0, 0, getCanvasWidth(), getCanvasHeight());
+  
+          //insertHitsGroup();
+          mHitGroup.setAttribute('transform', 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ')');
+          //var h = [new Shot(0.25, 0.25, 6), new Shot(0.25, 0.75, 7), new Shot(0.75, 0.25, 6), new Shot(0.75, 0.75, 6), new Shot(0.5, 0.5, 10)];
+          //var h = [];
+          //mShotPositions = h;
+          //drawHits(h);
+  
+      }*/
 
 
     var getMousePos = function (canvas, evt) {
@@ -350,7 +347,7 @@ define(['jquery'],function ($) {
             mCurInteractionMode = 1 /*InteractionMode.Mouse*/;
         }
         ev.preventDefault();
-       // console.log("Down");
+        // console.log("Down");
     }
 
     var onMouseUpHandler = function (ev) {
@@ -463,7 +460,7 @@ define(['jquery'],function ($) {
             mZoomAnimation.stop();
         }
 
-        runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function() { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+        runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
     }
 
     var onTouchStart = function (ev) {
@@ -540,6 +537,11 @@ define(['jquery'],function ($) {
         var pos = { x: ev.touches[0].clientX - rect.left, y: ev.touches[0].clientY - rect.top };
         return { x: pos.x, y: pos.y - getTouchOffset() };
     }
+    var getOffsetedTouchPosXY = function (clientX,clientY) {
+        var rect = mElement.getBoundingClientRect();
+        var pos = { x: clientX - rect.left, y: clientY - rect.top };
+        return { x: pos.x, y: pos.y - getTouchOffset() };
+    }
 
     var getOffsetedTouchPosAndNormalizedPos = function (ev) {
         // the normalized coordinate is in the range -0.5 - 0.5
@@ -550,6 +552,16 @@ define(['jquery'],function ($) {
         var normalized = { x: diff.x / rect.width, y: diff.y / rect.height };
         return [{ x: pos.x, y: pos.y - getTouchOffset() }, normalized];
     }
+    var getOffsetedTouchPosAndNormalizedPosXY = function (clientX,clientY) {
+        // the normalized coordinate is in the range -0.5 - 0.5
+        var rect = mElement.getBoundingClientRect();
+        var pos = { x: clientX - rect.left, y: clientY - rect.top };
+        var centerPos = { x: rect.width / 2, y: rect.height / 2 };
+        var diff = { x: pos.x - centerPos.x, y: pos.y - centerPos.y };
+        var normalized = { x: diff.x / rect.width, y: diff.y / rect.height };
+        return [{ x: pos.x, y: pos.y - getTouchOffset() }, normalized];
+    }
+
 
     var getNormalizedOffsetedTouchHaircrossPosition = function (evTouchList) {
         var rect = mElement.getBoundingClientRect();
@@ -586,7 +598,7 @@ define(['jquery'],function ($) {
                 mZoomAnimation.stop();
             }
 
-            runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function() { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+            runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         }
 
         turnOffTouchTimer();
@@ -616,7 +628,7 @@ define(['jquery'],function ($) {
         //console.log("Touch cancel");
     }
 
-    function pointerTypeToInteractionMode(ev){
+    function pointerTypeToInteractionMode(ev) {
         switch (ev.pointerType) {
             case "pen":
                 return 3/*InteractionMode.Stylus*/;
@@ -658,10 +670,10 @@ define(['jquery'],function ($) {
         //var targetSegments = getTargetSegments/*Spots*/();// getTargetSegments();
         var targetSegments = getTargetControlDescription();
 
-        var targetSegmentsLength=targetSegments.length;
+        var targetSegmentsLength = targetSegments.length;
         for (var si = 0; si < targetSegmentsLength; ++si) {
             var segments = targetSegments[si];
-            var segmentsSegmentsLength=segments.segments.length;
+            var segmentsSegmentsLength = segments.segments.length;
             for (var i = 0; i < segmentsSegmentsLength; ++i) {
                 var s = segments.segments[i];
                 var segmentEndRadius;
@@ -788,7 +800,7 @@ define(['jquery'],function ($) {
     }
 
     var addShot = function (x, y) {
-        mShotPositions.push(new Shot(x, y, {"datetime":Date(),"creator":"targetControl"}));
+        mShotPositions.push(new Shot(x, y, { "datetime": Date(), "creator": "targetControl" }));
         drawHits(mShotPositions);
 
         fireHitsChanged();
@@ -799,8 +811,8 @@ define(['jquery'],function ($) {
         }*/
     }
 
-    var fireHitsChanged=function(){
-        dispatchHitsChanged({ "getShots": getShots/*targetControl*/,"getTargetSegments":/*getTargetSegments*/getTargetControlDescription });
+    var fireHitsChanged = function () {
+        dispatchHitsChanged({ "getShots": getShots/*targetControl*/, "getTargetSegments":/*getTargetSegments*/getTargetControlDescription });
     }
 
     var onTimerMouseOutOfElement = function () {
@@ -820,75 +832,73 @@ define(['jquery'],function ($) {
         setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
 
-    function animateHiliteHit(h,i){
+    function animateHiliteHit(h, i) {
         h.css({ zyx: 0.0 });
-        h.animate({ "zyx": 1}, 
-        {
-        duration: 500,
-        step: function (value) {
-            var s;
-            if (i&1){
+        h.animate({ "zyx": 1 },
+            {
+                duration: 500,
+                step: function (value) {
+                    var s;
+                    if (i & 1) {
 
-            s = (1+value).toString();
-            }
-            else{
-                s = (2-value).toString();
-            }
-           // console.log(s);
-            this.setAttribute("transform", "scale(" + s + ")");
-        },
-        complete: function (now) {
-            i=i^1;
-            animateHiliteHit(h,i);
-        },
-        always: function (now) {
-            this.removeAttribute("transform");
-        }
-    });
+                        s = (1 + value).toString();
+                    }
+                    else {
+                        s = (2 - value).toString();
+                    }
+                    // console.log(s);
+                    this.setAttribute("transform", "scale(" + s + ")");
+                },
+                complete: function (now) {
+                    i = i ^ 1;
+                    animateHiliteHit(h, i);
+                },
+                always: function (now) {
+                    this.removeAttribute("transform");
+                }
+            });
     }
 
-    function stopHiliteAnimations()
-    {
+    function stopHiliteAnimations() {
         var allCurHilited = $('.HitShapeClassHilite');
-        allCurHilited.attr('class',"HitShapeClass");
+        allCurHilited.attr('class', "HitShapeClass");
         allCurHilited.stop();
     }
 
-    var setHitsToHilite=function(list){
+    var setHitsToHilite = function (list) {
         var allCurHilited = $('.HitShapeClassHilite');
-        allCurHilited.attr('class',"HitShapeClass");
+        allCurHilited.attr('class', "HitShapeClass");
         allCurHilited.stop();
 
         var selector;
-        if ($.isArray(list)){
-            for (var i=0;i<list.length;++i){
-                if (i!=0){selector+=",";}
-                else{selector='';}
-                selector+='#hit'+list[i].toString();
+        if ($.isArray(list)) {
+            for (var i = 0; i < list.length; ++i) {
+                if (i != 0) { selector += ","; }
+                else { selector = ''; }
+                selector += '#hit' + list[i].toString();
             }
         }
-        else{
-            selector='#hit'+list.toString();
+        else {
+            selector = '#hit' + list.toString();
         }
-         
+
         var h = $(/*'#hit'+list.toString()*/selector);
-        if (h.length>0)
-        {
-            h.attr('class',"HitShapeClassHilite");
-            var i=0;
-            animateHiliteHit(h,i);
+        if (h.length > 0) {
+            h.attr('class', "HitShapeClassHilite");
+            var i = 0;
+            animateHiliteHit(h, i);
         }
     }
 
-    function removeFromArray(arr,from, to) {    // adapted from https://johnresig.com/blog/javascript-array-remove/
+    function removeFromArray(arr, from, to) {    // adapted from https://johnresig.com/blog/javascript-array-remove/
         var rest = arr.slice((to || from) + 1 || arr.length);
         arr.length = from < 0 ? arr.length + from : from;
         return arr.push.apply(arr, rest);
-      };
+    };
 
-    var deleteShot=function(index){
-        console.log("Delete Shot Idx="+index);
-        removeFromArray(mShotPositions,index);
+    var deleteShot = function (index) {
+        console.log("Delete Shot Idx=" + index);
+        removeFromArray(mShotPositions, index);
         //mShotPositions.push(new Shot(x, y, 2));
         drawHits(mShotPositions);
 
@@ -898,12 +908,10 @@ define(['jquery'],function ($) {
     var Shot = function (xNormalized, yNormalized, params) {
         this.xNormalized = xNormalized;
         this.yNormalized = yNormalized;
-        if (params.hasOwnProperty('datetime'))
-        {
+        if (params.hasOwnProperty('datetime')) {
             this.datetime = params.datetime;
         }
-        if (params.hasOwnProperty('creator'))
-        {
+        if (params.hasOwnProperty('creator')) {
             this.creator = params.creator;
         }
     }
@@ -913,10 +921,10 @@ define(['jquery'],function ($) {
     }
 
     //--------------------------------------
-    var onPointerUpWindowPointerApi =function(e){}
-    var onPointerMoveWindowPointerApi =function(ev){
-        var interactionMode=pointerTypeToInteractionMode(ev);
-        if (interactionMode!=mCurInteractionMode){
+    var onPointerUpWindowPointerApi = function (e) { }
+    var onPointerMoveWindowPointerApi = function (ev) {
+        var interactionMode = pointerTypeToInteractionMode(ev);
+        if (interactionMode != mCurInteractionMode) {
             return;
         }
         if (mCurMouseInteractionState == 1) {
@@ -930,19 +938,34 @@ define(['jquery'],function ($) {
         }
     }
 
-    var onPointerDownHandlerPointerApi =function(ev){
-        var interactionMode=pointerTypeToInteractionMode(ev);
-        if (mZoomAnimation != null) {
-            mZoomAnimation.stop();
+    var onPointerDownHandlerPointerApi = function (ev) {
+        var interactionMode = pointerTypeToInteractionMode(ev);
+        if (interactionMode != 0) {
+            if (mZoomAnimation != null) {
+                // if there was a pending animation -> stop it now
+                mZoomAnimation.stop();
+            }
+
+            // now we are only interested in this mode - either mouse, touch or stylus and nothing else
+            mCurInteractionMode = interactionMode;//1 /*InteractionMode.Mouse*/;
+            if (mCurInteractionMode==2){
+                // in case of touch - set the crosshair above the finger
+                var pos = getOffsetedTouchPosXY(ev.clientX,ev.clientY);
+                mCrosshairElement.setAttribute('transform',
+                    'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
+    
+                runZoomInAnimation_({ x: pos.x, y: pos.y + getTouchOffset() * (1 + 0.1) }, mCurZoom, 0.1);
+            }
+            else{
+                runZoomInAnimation(ev, mCurZoom, 0.1);
+            }
+
+            ev.preventDefault();
         }
-
-
-        runZoomInAnimation(ev, mCurZoom, 0.1);
-        mCurInteractionMode = interactionMode;//1 /*InteractionMode.Mouse*/;
-        ev.preventDefault();
     }
-    var onPointerUpHandlerPointerApi =function(ev){
-        var interactionMode=pointerTypeToInteractionMode(ev);
+
+    var onPointerUpHandlerPointerApi = function (ev) {
+        var interactionMode = pointerTypeToInteractionMode(ev);
         if (mCurInteractionMode == interactionMode) {
             if (mZoomAnimation != null) {
                 mZoomAnimation.stop();
@@ -955,52 +978,73 @@ define(['jquery'],function ($) {
                 function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
         }
     }
-    var onPointerMoveHandlerPointerApi =function(ev){
+    var onPointerMoveHandlerPointerApi = function (ev) {
         console.log("PointerMove");
-        var interactionMode=pointerTypeToInteractionMode(ev);
+        var interactionMode = pointerTypeToInteractionMode(ev);
         ev.preventDefault();
-        if (interactionMode!=mCurInteractionMode){
+        if (interactionMode != mCurInteractionMode) {
+            // we are only interested in event of the same type as the one that started the action
             return;
         }
 
-        var pos = getMousePos(mElement, ev);
-        console.log("PointerMove:"+pos.x+" "+pos.y);
-        var transX = (pos.x - getCanvasWidth() / 2) / getCanvasWidth();
-        var transY = (pos.y - getCanvasHeight() / 2) / getCanvasHeight();
-        mCrosshairElement.setAttribute(
+        if (mCurInteractionMode!=2){
+            var pos = getMousePos(mElement, ev);
+            console.log("PointerMove:" + pos.x + " " + pos.y);
+            var transX = (pos.x - getCanvasWidth() / 2) / getCanvasWidth();
+            var transY = (pos.y - getCanvasHeight() / 2) / getCanvasHeight();
+            mCrosshairElement.setAttribute(
                 'transform',
                 'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ') translate(' + transX + ',' + transY + ') ');
-       
 
-        if (mTimerMouseOfElement != null) {
-            window.clearInterval(mTimerMouseOfElement);
-            mTimerMouseOfElement = null;
+
+            if (mTimerMouseOfElement != null) {
+                window.clearInterval(mTimerMouseOfElement);
+                mTimerMouseOfElement = null;
+            }
+
+            mLastMousePosNormalized = null;
+            mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
         }
+        else {
+            var pos = getOffsetedTouchPosAndNormalizedPosXY(ev.clientX,ev.clientY);
 
-        mLastMousePosNormalized = null;
-        mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
+            //console.log("x:" + pos[1].x + " y:" + pos[1].y);
+            mCrosshairElement.setAttribute('transform',
+                'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos[0].x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos[0].y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
+
+            if (updatePositionBasedOnNormalizedTouchPos(pos[1])) {
+                mLastTimeNormalizedTouchPos = pos[1];
+                if (mTimerTouchOutOfElement == null) {
+                    mTimerTouchOutOfElement = window.setInterval(onTouchAtEdgesOrOutOfElementTimer, 1000 / 10);
+                }
+            }
+            else {
+                turnOffTouchTimer();
+            }
+        }
     }
-    var onPointerOutHandlerPointerApi =function(ev){
+
+    var onPointerOutHandlerPointerApi = function (ev) {
         console.log("POINTER OUT");
-        var interactionMode=pointerTypeToInteractionMode(ev);
-        if (interactionMode!=mCurInteractionMode){
+        var interactionMode = pointerTypeToInteractionMode(ev);
+        if (interactionMode != mCurInteractionMode) {
             return;
         }
 
-     //   if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
-            mCurMouseInteractionState = 1/*MouseInteractionState.OutOfElement*/;
-       // }
+        //   if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
+        mCurMouseInteractionState = 1/*MouseInteractionState.OutOfElement*/;
+        // }
     }
 
-    var onPointerCancelHandlerPointerApi=function(ev){
+    var onPointerCancelHandlerPointerApi = function (ev) {
         console.log("POINTER CANCEL");
     }
 
-    var onPointerLeaveHandlerPointerApi=function(ev){
+    var onPointerLeaveHandlerPointerApi = function (ev) {
         console.log("POINTER LEAVE");
     }
 
-    var onPointerOverHandlerPointerApi=function(ev){
+    var onPointerOverHandlerPointerApi = function (ev) {
         console.log("POINTER OVER");
     }
 
@@ -1009,8 +1053,8 @@ define(['jquery'],function ($) {
         initialize: initialize,
         on: on,
         getShots: getShots,
-        notifyTargetControlDescriptionChanged:notifyTargetControlDescriptionChanged,
-        setHitHilite:setHitsToHilite,
-        deleteShot:deleteShot
+        notifyTargetControlDescriptionChanged: notifyTargetControlDescriptionChanged,
+        setHitHilite: setHitsToHilite,
+        deleteShot: deleteShot
     }
 });
