@@ -145,6 +145,7 @@ define(['jquery'],function ($) {
             window.addEventListener("pointermove", onPointerMoveWindowPointerApi);
 
             mElement.addEventListener("pointerdown", onPointerDownHandlerPointerApi);
+            mElement.addEventListener("pointerover", onPointerOverHandlerPointerApi);
             mElement.addEventListener("pointerup", onPointerUpHandlerPointerApi);
             mElement.addEventListener("pointermove", onPointerMoveHandlerPointerApi);
             mElement.addEventListener("pointerout", onPointerOutHandlerPointerApi);
@@ -955,6 +956,7 @@ define(['jquery'],function ($) {
         }
     }
     var onPointerMoveHandlerPointerApi =function(ev){
+        console.log("PointerMove");
         var interactionMode=pointerTypeToInteractionMode(ev);
         ev.preventDefault();
         if (interactionMode!=mCurInteractionMode){
@@ -996,6 +998,10 @@ define(['jquery'],function ($) {
 
     var onPointerLeaveHandlerPointerApi=function(ev){
         console.log("POINTER LEAVE");
+    }
+
+    var onPointerOverHandlerPointerApi=function(ev){
+        console.log("POINTER OVER");
     }
 
 
