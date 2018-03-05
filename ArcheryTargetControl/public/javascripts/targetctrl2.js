@@ -148,6 +148,8 @@ define(['jquery'],function ($) {
             mElement.addEventListener("pointerup", onPointerUpHandlerPointerApi);
             mElement.addEventListener("pointermove", onPointerMoveHandlerPointerApi);
             mElement.addEventListener("pointerout", onPointerOutHandlerPointerApi);
+            mElement.addEventListener("pointercancel",onPointerCancelHandlerPointerApi)
+            mElement.addEventListener("pointerleave",onPointerLeaveHandlerPointerApi)
         }
         else {
             mElement.addEventListener("mousedown", onMouseDownHandler);
@@ -913,7 +915,10 @@ define(['jquery'],function ($) {
     var onPointerUpWindowPointerApi =function(e){}
     var onPointerMoveWindowPointerApi =function(ev){
         var interactionMode=pointerTypeToInteractionMode(ev);
-        if (mCurMouseInteractionState == interactionMode) {
+        if (interactionMode!=mCurInteractionMode){
+            return;
+        }
+        if (mCurMouseInteractionState == 1) {
             if (mTimerMouseOfElement == null) {
                 mTimerMouseOfElement = window.setInterval(
                     function () { onTimerMouseOutOfElement(); }, 1000 / FPS_FOR_TIMER_OUTOFELEMENT);
@@ -957,7 +962,7 @@ define(['jquery'],function ($) {
         }
 
         var pos = getMousePos(mElement, ev);
-
+        console.log("PointerMove:"+pos.x+" "+pos.y);
         var transX = (pos.x - getCanvasWidth() / 2) / getCanvasWidth();
         var transY = (pos.y - getCanvasHeight() / 2) / getCanvasHeight();
         mCrosshairElement.setAttribute(
@@ -973,10 +978,24 @@ define(['jquery'],function ($) {
         mLastMousePosNormalized = null;
         mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
     }
-    var onPointerOutHandlerPointerApi =function(e){
-        if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
-            mCurMouseInteractionState = 1/*MouseInteractionState.OutOfElement*/;
+    var onPointerOutHandlerPointerApi =function(ev){
+        console.log("POINTER OUT");
+        var interactionMode=pointerTypeToInteractionMode(ev);
+        if (interactionMode!=mCurInteractionMode){
+            return;
         }
+
+     //   if (mCurInteractionMode == 1/*InteractionMode.Mouse*/) {
+            mCurMouseInteractionState = 1/*MouseInteractionState.OutOfElement*/;
+       // }
+    }
+
+    var onPointerCancelHandlerPointerApi=function(ev){
+        console.log("POINTER CANCEL");
+    }
+
+    var onPointerLeaveHandlerPointerApi=function(ev){
+        console.log("POINTER LEAVE");
     }
 
 
