@@ -946,6 +946,7 @@ define(['jquery'], function ($) {
         mCrosshairElement.setAttribute(
             'transform',
             'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ') translate(' + transX + ',' + transY + ') ');
+        mCrosshairElement.setAttribute('display','');
     }
 
     var onPointerUpWindowPointerApi = function (e) { }
@@ -1039,7 +1040,7 @@ define(['jquery'], function ($) {
         console.log("PointerMove");
         var interactionMode = pointerTypeToInteractionMode(ev);
         ev.preventDefault();
-        if (mCurInteractionMode==0&&interactionMode==1)
+        if (mCurInteractionMode==0&&(interactionMode==1||interactionMode==3))
         {
             var pos=getMousePos(mElement,ev);
             console.log(ev.clientX+" "+ev.clientY+"; "+pos.x+" "+pos.y);
@@ -1093,6 +1094,10 @@ define(['jquery'], function ($) {
     var onPointerOutHandlerPointerApi = function (ev) {
         console.log("POINTER OUT");
         var interactionMode = pointerTypeToInteractionMode(ev);
+        if (mCurInteractionMode==0&&(interactionMode==1||interactionMode==3)){
+            mCrosshairElement.setAttribute('display','none');
+        }
+
         if (interactionMode != mCurInteractionMode) {
             return;
         }
