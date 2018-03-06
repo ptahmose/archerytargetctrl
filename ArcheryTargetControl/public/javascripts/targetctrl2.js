@@ -929,6 +929,25 @@ define(['jquery'], function ($) {
     }
 
     //--------------------------------------
+    var cleanupPointerInteraction=function()
+    {
+        mLastMousePosNormalized = null;
+        mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
+        if (mTimerMouseOfElement != null) {
+            window.clearInterval(mTimerMouseOfElement);
+            mTimerMouseOfElement = null;
+        }
+        turnOffTouchTimer();
+    }
+
+    var updateMouseCrossHair=function(posx,posy){
+        var transX = (posx - getCanvasWidth() / 2) / getCanvasWidth();
+        var transY = (posy - getCanvasHeight() / 2) / getCanvasHeight();
+        mCrosshairElement.setAttribute(
+            'transform',
+            'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ') translate(' + transX + ',' + transY + ') ');
+    }
+
     var onPointerUpWindowPointerApi = function (e) { }
     var onPointerMoveWindowPointerApi = function (ev) {
         var interactionMode = pointerTypeToInteractionMode(ev);
@@ -1020,6 +1039,15 @@ define(['jquery'], function ($) {
         console.log("PointerMove");
         var interactionMode = pointerTypeToInteractionMode(ev);
         ev.preventDefault();
+        if (mCurInteractionMode==0&&interactionMode==1)
+        {
+            var pos=getMousePos(mElement,ev);
+            console.log(ev.clientX+" "+ev.clientY+"; "+pos.x+" "+pos.y);
+            updateMouseCrossHair(pos.x,pos.y);
+            return;
+        }
+
+
         if (interactionMode != mCurInteractionMode) {
             // we are only interested in event of the same type as the one that started the action
             return;
