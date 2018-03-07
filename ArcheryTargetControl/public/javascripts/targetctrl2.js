@@ -929,7 +929,7 @@ define(['jquery'], function ($) {
     }
 
     //--------------------------------------
-    var cleanupPointerInteraction=function()
+    var cleanupAddShotInteractionResources=function()
     {
         mLastMousePosNormalized = null;
         mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
@@ -970,6 +970,7 @@ define(['jquery'], function ($) {
     }
 
     var onPointerDownHandlerPointerApi = function (ev) {
+        console.log("Down:"+ev.pointerId);
         var interactionMode = pointerTypeToInteractionMode(ev);
         if (interactionMode != 0) {
             if (mZoomAnimation != null) {
@@ -1013,10 +1014,11 @@ define(['jquery'], function ($) {
                 addShot(posTransformed.x, posTransformed.y);
                 runZoomInAnimation(ev, mCurZoom, 1,
                     function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
+                cleanupAddShotInteractionResources();
             }
             else {
                 runZoomInAnimation_(mZoomCenterPos, mCurZoom, 1, function () { mCurInteractionMode = 0/*InteractionMode.Invalid*/; });
-                turnOffTouchTimer();
+                cleanupAddShotInteractionResources();//turnOffTouchTimer();
 
                 // only add the shot if the ZoomIn-operation was complete
                 if (zoomInActionWasStillActive == false) {
@@ -1037,7 +1039,7 @@ define(['jquery'], function ($) {
         }
     }
     var onPointerMoveHandlerPointerApi = function (ev) {
-        console.log("PointerMove");
+        console.log("PointerMove: "+ev.pointerId);
         var interactionMode = pointerTypeToInteractionMode(ev);
         ev.preventDefault();
         if (mCurInteractionMode==0&&(interactionMode==1||interactionMode==3))
