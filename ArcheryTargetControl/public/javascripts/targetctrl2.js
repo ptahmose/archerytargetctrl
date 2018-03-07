@@ -1004,7 +1004,7 @@ define(['jquery'], function ($) {
             var pos = getOffsetedTouchPosXY(ev.clientX, ev.clientY);
             mCrosshairElement.setAttribute('transform',
                 'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
-
+            mCrosshairElement.setAttribute('display', '');
             runZoomInAnimation_({ x: pos.x, y: pos.y + getTouchOffset() * (1 + 0.1) }, mCurZoom, 0.1);
         }
         else {
