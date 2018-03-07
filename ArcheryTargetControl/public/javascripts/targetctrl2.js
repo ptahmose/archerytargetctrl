@@ -954,19 +954,22 @@ define(['jquery'], function ($) {
     var onPointerUpWindowPointerApi = function (e) { }
     var onPointerMoveWindowPointerApi = function (ev) {
         var interactionMode = pointerTypeToInteractionMode(ev);
+        if (interactionMode == 0) { return; }
         if (interactionMode != mCurInteractionMode) {
             return;
         }
 
         if (mCurInteractionMode == 1) {
-            if (mCurMouseInteractionState == 1) {
-                if (mTimerMouseOfElement == null) {
-                    mTimerMouseOfElement = window.setInterval(
-                        function () { onTimerMouseOutOfElement(); }, 1000 / FPS_FOR_TIMER_OUTOFELEMENT);
-                }
+            if (mPointerIdOfAddShotInteraction == ev.pointerId) {
+                if (mCurMouseInteractionState == 1) {
+                    if (mTimerMouseOfElement == null) {
+                        mTimerMouseOfElement = window.setInterval(
+                            function () { onTimerMouseOutOfElement(); }, 1000 / FPS_FOR_TIMER_OUTOFELEMENT);
+                    }
 
-                var pos = getMousePosNormalized(mElement, ev);
-                mLastMousePosNormalized = pos;
+                    var pos = getMousePosNormalized(mElement, ev);
+                    mLastMousePosNormalized = pos;
+                }
             }
         }
     }
@@ -1016,10 +1019,13 @@ define(['jquery'], function ($) {
 
     var onPointerUpHandlerPointerApi = function (ev) {
         var interactionMode = pointerTypeToInteractionMode(ev);
+        if (interactionMode == 0) { return; }
         var zoomInActionWasStillActive = false;
         if (mZoomAnimation != null) {
             zoomInActionWasStillActive = true;
         }
+
+        if (mPointerIdOfAddShotInteraction != ev.pointerId) { return; }
 
         if (mCurInteractionMode == interactionMode) {
             if (mZoomAnimation != null) {
@@ -1059,7 +1065,7 @@ define(['jquery'], function ($) {
     var onPointerMoveHandlerPointerApi = function (ev) {
         console.log("PointerMove: " + ev.pointerId);
         var interactionMode = pointerTypeToInteractionMode(ev);
-        if (interactionMode==0){return;}
+        if (interactionMode == 0) { return; }
         ev.preventDefault();
         if (mCurInteractionMode == 0) {
             // not currently active "add arrow operation", we want to display the crosshair in
@@ -1122,11 +1128,14 @@ define(['jquery'], function ($) {
     var onPointerOutHandlerPointerApi = function (ev) {
         console.log("POINTER OUT");
         var interactionMode = pointerTypeToInteractionMode(ev);
+        if (interactionMode == 0) { return; }
         if (mCurInteractionMode == 0 && (interactionMode == 1 || interactionMode == 3)) {
             mCrosshairElement.setAttribute('display', 'none');
         }
 
-        if (interactionMode != mCurInteractionMode) {
+        if (mCurInteractionMode == 0) { return; }
+
+        if (mPointerIdOfAddShotInteraction != ev.pointerId) {
             return;
         }
 
