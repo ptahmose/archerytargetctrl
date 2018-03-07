@@ -929,8 +929,10 @@ define(['jquery'], function ($) {
     }
 
     //--------------------------------------
-    var cleanupAddShotInteractionResources=function()
-    {
+    var mPointerIdOfAddShotInteraction;
+    //var mAddShotInteractionInProgress;
+
+    var cleanupAddShotInteractionResources = function () {
         mLastMousePosNormalized = null;
         mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
         if (mTimerMouseOfElement != null) {
@@ -940,13 +942,13 @@ define(['jquery'], function ($) {
         turnOffTouchTimer();
     }
 
-    var updateMouseCrossHair=function(posx,posy){
+    var updateMouseCrossHair = function (posx, posy) {
         var transX = (posx - getCanvasWidth() / 2) / getCanvasWidth();
         var transY = (posy - getCanvasHeight() / 2) / getCanvasHeight();
         mCrosshairElement.setAttribute(
             'transform',
             'scale(' + getCanvasWidth() + ',' + getCanvasHeight() + ') translate(' + transX + ',' + transY + ') ');
-        mCrosshairElement.setAttribute('display','');
+        mCrosshairElement.setAttribute('display', '');
     }
 
     var onPointerUpWindowPointerApi = function (e) { }
@@ -970,30 +972,46 @@ define(['jquery'], function ($) {
     }
 
     var onPointerDownHandlerPointerApi = function (ev) {
-        console.log("Down:"+ev.pointerId);
+        console.log("Down:" + ev.pointerId);
         var interactionMode = pointerTypeToInteractionMode(ev);
-        if (interactionMode != 0) {
-            if (mZoomAnimation != null) {
-                // if there was a pending animation -> stop it now
-                mZoomAnimation.stop();
-            }
-
-            // now we are only interested in this mode - either mouse, touch or stylus and nothing else
-            mCurInteractionMode = interactionMode;//1 /*InteractionMode.Mouse*/;
-            if (mCurInteractionMode == 2) {
-                // in case of touch - set the crosshair above the finger
-                var pos = getOffsetedTouchPosXY(ev.clientX, ev.clientY);
-                mCrosshairElement.setAttribute('transform',
-                    'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
-
-                runZoomInAnimation_({ x: pos.x, y: pos.y + getTouchOffset() * (1 + 0.1) }, mCurZoom, 0.1);
-            }
-            else {
-                runZoomInAnimation(ev, mCurZoom, 0.1);
-            }
-
-            ev.preventDefault();
+        if (interactionMode == 0) {
+            // unknown device... do nothing
+            return;
         }
+
+        if (mCurInteractionMode != 0) {
+            if (mPointerIdOfAddShotInteraction != ev.pointerId) {
+                // an interaction was active, and now another "pointer down" from a different device was seen, e.g.
+                //  we clicked mouse first, and then touched with finger or so -> what we do is to ignore it
+                return;
+            } else {
+                // what to do now? we probably missed something...
+            }
+        }
+
+        if (mZoomAnimation != null) {
+            // if there was a pending animation -> stop it now
+            mZoomAnimation.stop();
+        }
+
+        // now we are only interested in this mode - either mouse, touch or stylus and nothing else
+        mCurInteractionMode = interactionMode;//1 /*InteractionMode.Mouse*/;
+        if (mCurInteractionMode == 2) {
+            // in case of touch - set the crosshair above the finger
+            var pos = getOffsetedTouchPosXY(ev.clientX, ev.clientY);
+            mCrosshairElement.setAttribute('transform',
+                'scale(' + getCanvasWidth() + ',' + getCanvasWidth() + ') translate(' + (pos.x - getCanvasWidth() / 2) / getCanvasWidth() + ',' + (pos.y - getCanvasHeight() / 2) / getCanvasHeight() + ') ');
+
+            runZoomInAnimation_({ x: pos.x, y: pos.y + getTouchOffset() * (1 + 0.1) }, mCurZoom, 0.1);
+        }
+        else {
+            runZoomInAnimation(ev, mCurZoom, 0.1);
+        }
+
+        //mAddShotInteractionInProgress=true;
+        mPointerIdOfAddShotInteraction = ev.pointerId;
+
+        ev.preventDefault();
     }
 
     var onPointerUpHandlerPointerApi = function (ev) {
@@ -1039,24 +1057,31 @@ define(['jquery'], function ($) {
         }
     }
     var onPointerMoveHandlerPointerApi = function (ev) {
-        console.log("PointerMove: "+ev.pointerId);
+        console.log("PointerMove: " + ev.pointerId);
         var interactionMode = pointerTypeToInteractionMode(ev);
+        if (interactionMode==0){return;}
         ev.preventDefault();
-        if (mCurInteractionMode==0&&(interactionMode==1||interactionMode==3))
-        {
-            var pos=getMousePos(mElement,ev);
-            console.log(ev.clientX+" "+ev.clientY+"; "+pos.x+" "+pos.y);
-            updateMouseCrossHair(pos.x,pos.y);
-            return;
+        if (mCurInteractionMode == 0) {
+            // not currently active "add arrow operation", we want to display the crosshair in
+            //  case the move was from mouse or pen
+            if (interactionMode == 1 || interactionMode == 3) {
+                var pos = getMousePos(mElement, ev);
+                //console.log(ev.clientX + " " + ev.clientY + "; " + pos.x + " " + pos.y);
+                updateMouseCrossHair(pos.x, pos.y);
+                return;
+            }
         }
 
-
-        if (interactionMode != mCurInteractionMode) {
+        // well, now (we are in "add-arrow-operation-mode") we expect that the pointer-Id is valid - we are 
+        //  then only interested in the same id which started the interaction
+        ///if (interactionMode != mCurInteractionMode) {
+        if (mPointerIdOfAddShotInteraction != ev.pointerId) {
             // we are only interested in event of the same type as the one that started the action
             return;
         }
 
         if (mCurInteractionMode != 2) {
+            // here we handle mouse AND stylus
             var pos = getMousePos(mElement, ev);
             console.log("PointerMove:" + pos.x + " " + pos.y);
             var transX = (pos.x - getCanvasWidth() / 2) / getCanvasWidth();
@@ -1075,6 +1100,7 @@ define(['jquery'], function ($) {
             mCurMouseInteractionState = 0/*MouseInteractionState.Invalid*/;
         }
         else {
+            // and here touch
             var pos = getOffsetedTouchPosAndNormalizedPosXY(ev.clientX, ev.clientY);
 
             //console.log("x:" + pos[1].x + " y:" + pos[1].y);
@@ -1096,8 +1122,8 @@ define(['jquery'], function ($) {
     var onPointerOutHandlerPointerApi = function (ev) {
         console.log("POINTER OUT");
         var interactionMode = pointerTypeToInteractionMode(ev);
-        if (mCurInteractionMode==0&&(interactionMode==1||interactionMode==3)){
-            mCrosshairElement.setAttribute('display','none');
+        if (mCurInteractionMode == 0 && (interactionMode == 1 || interactionMode == 3)) {
+            mCrosshairElement.setAttribute('display', 'none');
         }
 
         if (interactionMode != mCurInteractionMode) {
