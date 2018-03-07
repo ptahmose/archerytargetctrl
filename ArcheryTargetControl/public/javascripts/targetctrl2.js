@@ -1145,15 +1145,22 @@ define(['jquery'], function ($) {
     }
 
     var onPointerCancelHandlerPointerApi = function (ev) {
-        console.log("POINTER CANCEL");
+        console.log("POINTER CANCEL - Id="+ev.pointerId);
+        if (mCurInteractionMode==0){return;}
+        if (mPointerIdOfAddShotInteraction!=ev.pointerId){
+            // in this case... we are not interested
+            return;
+        }
+
+        cancelZoomAddArrowOperation();
     }
 
     var onPointerLeaveHandlerPointerApi = function (ev) {
-        console.log("POINTER LEAVE");
+        console.log("POINTER LEAVE - Id="+ev.pointerId);
     }
 
     var onPointerOverHandlerPointerApi = function (ev) {
-        console.log("POINTER OVER");
+        console.log("POINTER OVER - Id="+ev.pointerId);
     }
 
 
