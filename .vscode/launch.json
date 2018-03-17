@@ -37,6 +37,27 @@
                 //"trace": "verbose"
             },
 
+            {
+                "name": "Launch Edge against file",
+                "type": "edge",
+                "request": "launch",
+                //"url": "file:///${workspaceRoot}/ArcheryTargetControl/public/pages/testpage2.html",
+                "file": "file://${workspaceRoot}/ArcheryTargetControl/public/pages/testpage2.html",
+                "webRoot": "${workspaceRoot}/ArcheryTargetControl/public/", 
+                "sourceMaps": true
+            },
+    
+
+            {
+                "name": "Attach to Edge",
+                "type": "edge",
+                "request": "attach",
+                //"url": "file:///${workspaceRoot}/ArcheryTargetControl/public/pages/testpage2.html",
+                "port": 9222,
+                "webRoot": "${workspaceRoot}/ArcheryTargetControl/public/", 
+                "sourceMaps": true
+            },
+
         {
             "name": "Launch index.html (without sourcemaps)",
             "type": "edge",

@@ -16,7 +16,15 @@
 
     <style type="text/css">
        #myCanvas {
-           border: 1px solid blue;
+                  
+       }
+
+       #innerDiv  {
+                    border-style: dashed;
+                    border-color:blue;
+                    border-width: 5px;
+                    margin:0 auto;
+                    
        }
 
         td.details-control {
@@ -36,7 +44,6 @@
       border: 0;
       overflow: hidden; /*  Disable scrollbars */
       display: block;  /* No floating content on sides */
-      resize:both;
     }
 
 
@@ -55,12 +62,13 @@
 
     <!-- width="512" height="512" -->
     <div id="targetDiv" class="targetCtrl" style="touch-action: none;position: relative;" >
+        <div id="innerDiv">
         <canvas id="myCanvas" style="touch-action: none;"></canvas>
 
         <!--<canvas id="myCanvas2" width="800" height="800"></canvas>-->
 
         <!-- https://stackoverflow.com/questions/5971320/svg-image-is-not-cropped-in-ie9 -->
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="mySvg" width="0" height="0" style="touch-action: none;position: absolute; left: 0px; top: 0px; z-index: 2; width: 0px;height: 0px; pointer-events: none; overflow: hidden;">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" id="mySvg" width="0" height="0" style="touch-action: none;position: absolute;  z-index: 2; width: 0px;height: 0px; pointer-events: none; overflow: hidden;">
 
              <style type="text/css" >
                 
@@ -141,6 +149,7 @@
                 </use>
             </g>
         </svg>
+        </div>
     </div>
 
     <select id="targetselectcombo">
@@ -148,8 +157,8 @@
         <option value="3spots">Spots</option> -->
     </select>
 
-    <div id="resultTableDiv">
-        <table id="resultTable" style="width:100%">
+    <div id="resultTableDiv" style="height:300px;overflow:auto;    ">
+        <table id="resultTable" style="width:100%;">
             <thead>
                 <tr>
                     <th></th>

@@ -189,20 +189,63 @@ define(['jquery'], function ($) {
     var calcCanvasSizeFromParentContainerSize = function () {
         var container = $(mElement).parent();
         var viewportWidth = container.width();
+        //var viewportWidth = container.innerWidth();
         var viewportHeight = container.height();
+        //var viewportHeight = container.innerHeight();
         var canvasWidth = Math.min(viewportWidth, viewportHeight);
         var canvasHeight = canvasWidth;
+
+        var pos = container.position();
+        var off = container.offset();
+
+        // get bordersize
+        var blw = parseInt($(mElement).css('borderLeftWidth'), 10);
+        var brw = parseInt($(mElement).css('borderRightWidth'), 10);
+        var bth = parseInt($(mElement).css('borderTopWidth'), 10);
+        var btb = parseInt($(mElement).css('borderBottomWidth'), 10);
+
+        var iw=container.innerWidth();
+        var ow=container.outerWidth();
+
+        return { 
+            canvasWidth: canvasWidth,
+             canvasHeight: canvasHeight,
+              top: container.offsetTop,
+               left: container.offsetLeft};
+
+
         return { canvasWidth: canvasWidth, canvasHeight: canvasHeight, top: (viewportHeight - canvasHeight) / 2, left: (viewportWidth - canvasWidth) / 2 };
+        /*return {
+            canvasWidth: canvasWidth - (blw + brw),
+            canvasHeight: canvasHeight - (bth + btb),
+            top:  (viewportHeight - canvasHeight) / 2,
+            left: (viewportWidth - canvasWidth) / 2
+        };*/
     }
 
     var resize = function () {
+        var aw = $(mElement).parent().parent().width();var ah=$(mElement).parent().parent().height();
+        var iw=Math.min(aw,ah)
+        $('#innerDiv').outerWidth(iw);
+        $('#innerDiv').outerHeight(iw);
+        //$('#innerDiv').attr('style','position:absolute');
+        //$('#innerDiv').attr('style','left:20px');
+
         var size = calcCanvasSizeFromParentContainerSize();
+
+        var computedStyle = window.getComputedStyle(mElement);
+        var ow = $(mElement).outerWidth();
+        var owblw = parseInt($(mElement).css('borderLeftWidth'), 10);
+
+
+        //size.top += 1;size.left+=1;size.canvasWidth-=3;size.canvasHeight-=3;
         mElement.style.position = "absolute";
         mElement.setAttribute("width", size.canvasWidth);
         mElement.setAttribute("height", size.canvasHeight);
         mElement.style.top = size.top + "px";
         mElement.style.left = size.left + "px";
 
+        mSvgElement.style.position="absolute";
         mSvgElement.style.width = size.canvasWidth + 'px';
         mSvgElement.style.height = size.canvasHeight + 'px';
         mSvgElement.style.top = size.top + "px";
@@ -1145,9 +1188,9 @@ define(['jquery'], function ($) {
     }
 
     var onPointerCancelHandlerPointerApi = function (ev) {
-        console.log("POINTER CANCEL - Id="+ev.pointerId);
-        if (mCurInteractionMode==0){return;}
-        if (mPointerIdOfAddShotInteraction!=ev.pointerId){
+        console.log("POINTER CANCEL - Id=" + ev.pointerId);
+        if (mCurInteractionMode == 0) { return; }
+        if (mPointerIdOfAddShotInteraction != ev.pointerId) {
             // in this case... we are not interested
             return;
         }
@@ -1156,11 +1199,11 @@ define(['jquery'], function ($) {
     }
 
     var onPointerLeaveHandlerPointerApi = function (ev) {
-        console.log("POINTER LEAVE - Id="+ev.pointerId);
+        console.log("POINTER LEAVE - Id=" + ev.pointerId);
     }
 
     var onPointerOverHandlerPointerApi = function (ev) {
-        console.log("POINTER OVER - Id="+ev.pointerId);
+        console.log("POINTER OVER - Id=" + ev.pointerId);
     }
 
 
