@@ -38,6 +38,19 @@
             },
 
             {
+                "type": "chrome",
+                "request": "launch",
+                "name": "Launch Chrome against file (3)",
+        //        "url": "http://localhost:3000/pages/testpage1.html",
+                //"url": "http://localhost:3000/pages/testpage2.html",
+                "file": "${workspaceRoot}/ArcheryTargetControl/public/pages/testpage3.html",
+                "webRoot": "${workspaceRoot}/ArcheryTargetControl/public/", 
+                "sourceMaps": true,
+        "breakOnLoad": true,
+                    //"trace": "verbose"
+                },
+
+            {
                 "name": "Launch Edge against file",
                 "type": "edge",
                 "request": "launch",
