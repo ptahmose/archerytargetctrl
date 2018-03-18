@@ -42,9 +42,9 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
     }
 
     function cellformatter(value, row, index, field) {
-        var s = '<button class="datatable-delete" data-rowid="'+index.toString()+
-                    '"  type="button">Delete</button>';
-        return s;                    
+        var s = '<button class="datatable-delete" data-rowid="' + index.toString() +
+            '"  type="button">Delete</button>';
+        return s;
 
         //return '<button class="datatable-delete"  type="button">Delete</button>';
 
@@ -63,6 +63,7 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
         //mTable=$('#resultTable');
         mTable = $(selector).bootstrapTable({
             data: mData,
+            detailView:true,
             columns: [
                 {
                     checkbox: true
@@ -95,43 +96,51 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
             //   } else {
             //     $(this).addClass('active').siblings().removeClass('active');
             //   }
-            
+
             //updateSelectedRows(mTable, mHiliteShot);
             var index = row.id;//$element[0].rowIndex-1;
 
-            var isSelected=false;
+            var isSelected = false;
             var s = mTable.bootstrapTable('getSelections');
-            for (var i=0;i<s.length;++i){
-                if (s[i].id==index){
-                    isSelected=true;
+            for (var i = 0; i < s.length; ++i) {
+                if (s[i].id == index) {
+                    isSelected = true;
                     break;
                 }
             }
 
-            if (isSelected==false){
-            mTable.bootstrapTable('check',index);}
+            if (isSelected == false) {
+                mTable.bootstrapTable('check', index);
+            }
             else {
-                mTable.bootstrapTable('uncheck',index);}
+                mTable.bootstrapTable('uncheck', index);
+            }
         });
 
-        $(selector).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (row, $element){
+        $(selector).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (row, $element) {
             updateSelectedRows(mTable, mHiliteShot);
         });
 
         mTable.on('click', 'tbody .datatable-delete', function (e) {
             var rowId;
             var t = e.currentTarget;
-            if (t!=null){
-                rowId=parseInt(t.dataset.rowid);
+            if (t != null) {
+                rowId = parseInt(t.dataset.rowid);
             }
 
-            if (rowId!=null){
-                mDeleteShot(rowId);}
-             // https://stackoverflow.com/questions/5563783/jquery-class-click-multiple-elements-click-event-once
-             e.stopPropagation();
-             e.stopImmediatePropagation();
-             return;
-         });
+            if (rowId != null) {
+                mDeleteShot(rowId);
+            }
+
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        });
+
+        mTable.on('expand-row.bs.table', function (e, index, row, $detail) {
+            var s = format(row);
+            $detail.html(s);
+        });
+
 
 
         //     $(selector).on('all.bs.table', function (name,args) {
@@ -216,32 +225,32 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
         //         //     //here you can trigger a custom event
         //         // });
 
-        //         function format(d) {
-        //             // `d` is the original data object for the row
-        //             var htmlText=
-        //                 '<table class="details" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
-        //                 '<tr class="details">' +
-        //                 '<td class="details">Id:</td>' +
-        //                 '<td class="details">' + d.id + '</td>' +
-        //                 '</tr>' +
-        //                 '<tr class="details">' +
-        //                 '<td class="details">Score:</td>' +
-        //                 '<td class="details">' + d.score + '</td>' +
-        //                 '</tr>' +
-        //                 '<tr class="details">' +
-        //                 '<td class="details">Position:</td>' +
-        //                 '<td class="details">' + d.pos() + '</td>' +
-        //                 '</tr>';
-        //             if (d.shotElement.hasOwnProperty('datetime'))            {
-        //                 htmlText+=
-        //                 '<tr class="details">' +
-        //                 '<td class="details">Date-Time:</td>' +
-        //                 '<td class="details">' + d.shotElement.datetime + '</td>' +
-        //                 '</tr>';
-        //             }
-        //             htmlText+='</table>';
-        //             return htmlText;
-        //         }
+                 function format(d) {
+                     // `d` is the original data object for the row
+                     var htmlText=
+                         '<table class="details" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+                         '<tr class="details">' +
+                         '<td class="details">Id:</td>' +
+                         '<td class="details">' + d.id + '</td>' +
+                         '</tr>' +
+                         '<tr class="details">' +
+                         '<td class="details">Score:</td>' +
+                         '<td class="details">' + d.score + '</td>' +
+                         '</tr>' +
+                         '<tr class="details">' +
+                         '<td class="details">Position:</td>' +
+                         '<td class="details">' + d.pos() + '</td>' +
+                         '</tr>';
+                     if (d.shotElement.hasOwnProperty('datetime'))            {
+                         htmlText+=
+                         '<tr class="details">' +
+                         '<td class="details">Date-Time:</td>' +
+                         '<td class="details">' + d.shotElement.datetime + '</td>' +
+                         '</tr>';
+                     }
+                     htmlText+='</table>';
+                     return htmlText;
+                 }
 
 
         //         // Add event listener for opening and closing details
