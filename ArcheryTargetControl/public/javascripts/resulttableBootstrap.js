@@ -42,8 +42,11 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
     }
 
     function cellformatter(value, row, index, field) {
+        var s = '<button class="datatable-delete" data-rowid="'+index.toString()+
+                    '"  type="button">Delete</button>';
+        return s;                    
 
-        return '<button class="datatable-delete" type="button">Delete</button>';
+        //return '<button class="datatable-delete"  type="button">Delete</button>';
 
     }
 
@@ -114,6 +117,21 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
         $(selector).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (row, $element){
             updateSelectedRows(mTable, mHiliteShot);
         });
+
+        mTable.on('click', 'tbody .datatable-delete', function (e) {
+            var rowId;
+            var t = e.currentTarget;
+            if (t!=null){
+                rowId=parseInt(t.dataset.rowid);
+            }
+
+            if (rowId!=null){
+                mDeleteShot(rowId);}
+             // https://stackoverflow.com/questions/5563783/jquery-class-click-multiple-elements-click-event-once
+             e.stopPropagation();
+             e.stopImmediatePropagation();
+             return;
+         });
 
 
         //     $(selector).on('all.bs.table', function (name,args) {
