@@ -10,8 +10,8 @@ requirejs.config({
         // js/lib/jquery-1.9.0.js, relative to
         // the HTML page.
         jquery: 'lib/jquery',
-        tables: 'http://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min',
-        tablespluginorderneutral: 'https://cdn.datatables.net/plug-ins/1.10.16/api/order.neutral()',
+        // tables: 'http://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min',
+        // tablespluginorderneutral: 'https://cdn.datatables.net/plug-ins/1.10.16/api/order.neutral()',
 
         //popper: 'https://unpkg.com/popper.js/dist/umd/popper.min',
         bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min',
@@ -20,8 +20,8 @@ requirejs.config({
     },
     shim:
         {
-            tables: ['jquery'],
-            tablespluginorderneutral: ['tables'],
+            // tables: ['jquery'],
+            // tablespluginorderneutral: ['tables'],
             popper: ['jquery'],
             bootstrap:['jquery' ] ,
             bstable:['bootstrap']
@@ -32,8 +32,8 @@ requirejs.config({
 //     window.Popper = popper; // http://blog.chasepeeler.com/2017/09/12/bootstrap-4-and-requirejs/
 
 
-    requirejs(["jquery", "targetctrl2", "resulttable2", "targetctrldata", "tables", "bootstrap","bstable"],
-        function ($, targetControl, shotResultTable, targetctrldata, jqueryTables, bootstrap,bstable) {
+    requirejs(["jquery", "targetctrl2", "resulttableBootstrap", "targetctrldata", "bootstrap","bstable"],
+        function ($, targetControl, shotResultTable, targetctrldata, bootstrap,bstable) {
 
             //window.Popper = popper; // http://blog.chasepeeler.com/2017/09/12/bootstrap-4-and-requirejs/
 
@@ -95,10 +95,9 @@ requirejs.config({
                 targetControl.on("hitsChanged", function () { console.log("HITS CHANGED"); });
                 // alert("HELLO");
 
-                var tableElement = document.getElementById('resultTable');
+                //var tableElement = document.getElementById('resultTable');
 
-                //(function(){
-                var table = shotResultTable.initialize(tableElement,
+/*                var table = shotResultTable.initialize(tableElement,
                     function (i) {
                         //console.log(i.toString());
                         targetControl.setHitHilite(i);
@@ -107,12 +106,23 @@ requirejs.config({
                         targetControl.deleteShot(i);
                     });
 
-                //shotResultTable.onTableChanged({});
                 var f = function (targetCtrl) { table.onTableChanged(targetCtrl) };
                 targetControl.on("hitsChanged",
                     function (tableChgInfo) { shotResultTable.onTableChanged(tableChgInfo); }
-                );
-                //}());
+                );*/
+                var table =shotResultTable.initialize('#bootstraptable',
+                    function (i) {
+                        //console.log(i.toString());
+                        targetControl.setHitHilite(i);
+                    },
+                    function (i) {
+                        targetControl.deleteShot(i);
+                    });
+                targetControl.on("hitsChanged",
+                    function(tableChgInfo){shotResultTable.onTableChanged(tableChgInfo);}
+                     );
+
+
 
                 updateTargetSelectionCombobox(targetctrldata.getTargetList());
                 $('#targetselectcombo').change(function (event, ui) {
@@ -121,25 +131,9 @@ requirejs.config({
                     //console.log("SELECTED:"+this.value);
                 });
 
-                // (function(targetCtrl){table.onTableChanged(targetCtrl);}){}());
-
-                /* $('#resultTable').DataTable({
-                      data:[
-                          new ResultTableRow(3,"ABC"),
-                          new ResultTableRow(4,"KOL"),
-                          new ResultTableRow(8,"OILKJ")
-                      ],
-                      columns:[
-                          { data:'score'},
-                          { data:'pos'}
-                      ]
-                 });*/
 
 
-
-
-
-                $('#bootstraptable').bootstrapTable({
+               /* $('#bootstraptable').bootstrapTable({
                     columns: [{
                         field: 'id',
                         title: 'Item ID'
@@ -159,7 +153,7 @@ requirejs.config({
                         name: 'Item 2',
                         price: '$2'
                     }]
-                });
+                });*/
 
             });
 

@@ -204,14 +204,15 @@ define(['jquery'], function ($) {
         var bth = parseInt($(mElement).css('borderTopWidth'), 10);
         var btb = parseInt($(mElement).css('borderBottomWidth'), 10);
 
-        var iw=container.innerWidth();
-        var ow=container.outerWidth();
+        var iw = container.innerWidth();
+        var ow = container.outerWidth();
 
-        return { 
+        return {
             canvasWidth: canvasWidth,
-             canvasHeight: canvasHeight,
-              top: container.offsetTop,
-               left: container.offsetLeft};
+            canvasHeight: canvasHeight,
+            top: container.offsetTop,
+            left: container.offsetLeft
+        };
 
 
         return { canvasWidth: canvasWidth, canvasHeight: canvasHeight, top: (viewportHeight - canvasHeight) / 2, left: (viewportWidth - canvasWidth) / 2 };
@@ -224,8 +225,8 @@ define(['jquery'], function ($) {
     }
 
     var resize = function () {
-        var aw = $(mElement).parent().parent().width();var ah=$(mElement).parent().parent().height();
-        var iw=Math.min(aw,ah)
+        var aw = $(mElement).parent().parent().width(); var ah = $(mElement).parent().parent().height();
+        var iw = Math.min(aw, ah)
         $('#innerDiv').outerWidth(iw);
         $('#innerDiv').outerHeight(iw);
         //$('#innerDiv').attr('style','position:absolute');
@@ -245,7 +246,7 @@ define(['jquery'], function ($) {
         mElement.style.top = size.top + "px";
         mElement.style.left = size.left + "px";
 
-        mSvgElement.style.position="absolute";
+        mSvgElement.style.position = "absolute";
         mSvgElement.style.width = size.canvasWidth + 'px';
         mSvgElement.style.height = size.canvasHeight + 'px';
         mSvgElement.style.top = size.top + "px";
@@ -883,6 +884,8 @@ define(['jquery'], function ($) {
         setHitGraphicsTransform(mZoomCenterPos.x, mZoomCenterPos.y, mCurZoom);
     }
 
+    var mHiliteAnimation;
+
     function animateHiliteHit(h, i) {
         h.css({ zyx: 0.0 });
         h.animate({ "zyx": 1 },
@@ -908,18 +911,26 @@ define(['jquery'], function ($) {
                     this.removeAttribute("transform");
                 }
             });
+        mHiliteAnimation=h;
     }
 
     function stopHiliteAnimations() {
         var allCurHilited = $('.HitShapeClassHilite');
         allCurHilited.attr('class', "HitShapeClass");
-        allCurHilited.stop();
+        //allCurHilited.stop();
+        if (mHiliteAnimation!=null)
+        {
+            var hi = mHiliteAnimation;
+            mHiliteAnimation=null;
+            hi.stop(true,false);
+        }
     }
 
     var setHitsToHilite = function (list) {
+        stopHiliteAnimations();/*
         var allCurHilited = $('.HitShapeClassHilite');
         allCurHilited.attr('class', "HitShapeClass");
-        allCurHilited.stop();
+        allCurHilited.stop();*/
 
         var selector;
         if ($.isArray(list)) {
@@ -933,11 +944,13 @@ define(['jquery'], function ($) {
             selector = '#hit' + list.toString();
         }
 
-        var h = $(/*'#hit'+list.toString()*/selector);
-        if (h.length > 0) {
-            h.attr('class', "HitShapeClassHilite");
-            var i = 0;
-            animateHiliteHit(h, i);
+        if (selector != undefined) {
+            var h = $(/*'#hit'+list.toString()*/selector);
+            if (h.length > 0) {
+                h.attr('class', "HitShapeClassHilite");
+                var i = 0;
+                animateHiliteHit(h, i);
+            }
         }
     }
 
