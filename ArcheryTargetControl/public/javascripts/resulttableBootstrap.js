@@ -54,26 +54,89 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
         mHiliteShot = funcHilite;
         mDeleteShot = funcDeleteShot;
 
-        mData = [
-            /* new ResultTableRow(3,"ABC"),
-             new ResultTableRow(4,"KOL"),
-             new ResultTableRow(8,"OILKJ")*/
-        ];
+        mData = [];
+
+       /* $.fn.bootstrapTable.Constructor.prototype.onSort = function (event) {
+            var $this = event.type === "keypress" ? $(event.currentTarget) : $(event.currentTarget).parent(),
+
+                $this_ = this.$header.find('th').eq($this.index());
+
+
+
+            this.$header.add(this.$header_).find('span.order').remove();
+
+
+
+            if (this.options.sortName === $this.data('field')) {
+                if (this.options.sortOrder == 'desc') {
+                    this.options.sortOrder=undefined;
+                    this.options.sortName=undefined;
+                }
+                else {
+                    this.options.sortOrder = this.options.sortOrder === 'asc' ? 'desc' : 'asc';
+                }
+
+            } else {
+
+                this.options.sortName = $this.data('field');
+
+                if (this.options.rememberOrder) {
+
+                    this.options.sortOrder = $this.data('order') === 'asc' ? 'desc' : 'asc';
+
+                } else {
+
+                    this.options.sortOrder = this.columns[this.fieldsColumnsIndex[$this.data('field')]].order;
+
+                }
+
+            }
+
+            this.trigger('sort', this.options.sortName, this.options.sortOrder);
+
+
+
+            $this.add($this_).data('order', this.options.sortOrder);
+
+
+
+            // Assign the correct sortable arrow
+
+            this.getCaret();
+
+
+
+            if (this.options.sidePagination === 'server') {
+
+                this.initServer(this.options.silentSort);
+
+                return;
+
+            }
+
+
+
+            this.initSort();
+
+            this.initBody();
+        }*/
 
         //mTable=$('#resultTable');
         mTable = $(selector).bootstrapTable({
             data: mData,
-            detailView:true,
+            detailView: true,
             columns: [
                 {
                     checkbox: true
                 },
                 {
                     field: 'score',
-                    title: 'Score'
+                    title: 'Score',
+                    sortable: true
                 }, {
                     formatter: function (value, row, index, field) { return row.pos(); },
                     title: 'Position',
+                    sortable: true
                 },
                 {
                     title: 'Action',
@@ -81,6 +144,9 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
                 }
             ]
         });
+
+        var xxOpt = mTable.bootstrapTable('getOptions');
+        var xx = xxOpt.sortOrder;
 
         /*  $(selector).on('change', 'tr' , function (event) {
               if($('.selected')){
@@ -139,6 +205,18 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
         mTable.on('expand-row.bs.table', function (e, index, row, $detail) {
             var s = format(row);
             $detail.html(s);
+        });
+
+        mTable.on('sort.bs.table', function (e, name, order) {
+            console.log(name + "  " + order);
+          /*  var xx = mTable.bootstrapTable('getOptions');
+            var xxname = xx.sortName;
+            var o = mTable.bootstrapTable('getOptions').sortOrder;
+            console.log(mTable.bootstrapTable('getOptions').sortOrder);
+            if (o == 'desc') {
+                //mTable.bootstrapTable('getOptions').sortOrder=undefined;
+                mTable.bootstrapTable('getOptions').sortName = undefined;
+            }*/
         });
 
 
@@ -225,32 +303,32 @@ define(["require", "jquery", "bootstrap", "bstable"], function (require, $, boot
         //         //     //here you can trigger a custom event
         //         // });
 
-                 function format(d) {
-                     // `d` is the original data object for the row
-                     var htmlText=
-                         '<table class="details" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
-                         '<tr class="details">' +
-                         '<td class="details">Id:</td>' +
-                         '<td class="details">' + d.id + '</td>' +
-                         '</tr>' +
-                         '<tr class="details">' +
-                         '<td class="details">Score:</td>' +
-                         '<td class="details">' + d.score + '</td>' +
-                         '</tr>' +
-                         '<tr class="details">' +
-                         '<td class="details">Position:</td>' +
-                         '<td class="details">' + d.pos() + '</td>' +
-                         '</tr>';
-                     if (d.shotElement.hasOwnProperty('datetime'))            {
-                         htmlText+=
-                         '<tr class="details">' +
-                         '<td class="details">Date-Time:</td>' +
-                         '<td class="details">' + d.shotElement.datetime + '</td>' +
-                         '</tr>';
-                     }
-                     htmlText+='</table>';
-                     return htmlText;
-                 }
+        function format(d) {
+            // `d` is the original data object for the row
+            var htmlText =
+                '<table class="details" cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+                '<tr class="details">' +
+                '<td class="details">Id:</td>' +
+                '<td class="details">' + d.id + '</td>' +
+                '</tr>' +
+                '<tr class="details">' +
+                '<td class="details">Score:</td>' +
+                '<td class="details">' + d.score + '</td>' +
+                '</tr>' +
+                '<tr class="details">' +
+                '<td class="details">Position:</td>' +
+                '<td class="details">' + d.pos() + '</td>' +
+                '</tr>';
+            if (d.shotElement.hasOwnProperty('datetime')) {
+                htmlText +=
+                    '<tr class="details">' +
+                    '<td class="details">Date-Time:</td>' +
+                    '<td class="details">' + d.shotElement.datetime + '</td>' +
+                    '</tr>';
+            }
+            htmlText += '</table>';
+            return htmlText;
+        }
 
 
         //         // Add event listener for opening and closing details

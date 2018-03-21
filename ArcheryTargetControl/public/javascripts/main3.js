@@ -15,6 +15,7 @@ requirejs.config({
 
         //popper: 'https://unpkg.com/popper.js/dist/umd/popper.min',
         bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min',
+        //bstable: 'lib/bootstrap-table',
         bstable: 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min'
 
     },
