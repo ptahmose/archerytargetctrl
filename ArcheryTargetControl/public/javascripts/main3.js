@@ -10,22 +10,22 @@ requirejs.config({
         // js/lib/jquery-1.9.0.js, relative to
         // the HTML page.
         jquery: 'lib/jquery',
-        // tables: 'http://cdn.datatables.net/v/dt/dt-1.10.16/datatables.min',
+        tables: 'https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables',
         // tablespluginorderneutral: 'https://cdn.datatables.net/plug-ins/1.10.16/api/order.neutral()',
 
         //popper: 'https://unpkg.com/popper.js/dist/umd/popper.min',
         bootstrap: 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min',
         //bstable: 'lib/bootstrap-table',
-        bstable: 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min'
+        //bstable: 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min'*/
 
     },
     shim:
         {
-            // tables: ['jquery'],
+            tables: ['jquery','bootstrap'],
             // tablespluginorderneutral: ['tables'],
-            popper: ['jquery'],
+           /* popper: ['jquery'],*/
             bootstrap:['jquery' ] ,
-            bstable:['bootstrap']
+            /*bstable:['bootstrap']*/
         }
 });
 
@@ -33,8 +33,8 @@ requirejs.config({
 //     window.Popper = popper; // http://blog.chasepeeler.com/2017/09/12/bootstrap-4-and-requirejs/
 
 
-    requirejs(["jquery", "targetctrl2", "resulttableBootstrap", "targetctrldata", "bootstrap","bstable"],
-        function ($, targetControl, shotResultTable, targetctrldata, bootstrap,bstable) {
+    requirejs(["jquery", "targetctrl2", "resultTableDatatables", "targetctrldata", "bootstrap","tables"],
+        function ($, targetControl, shotResultTable, targetctrldata, bootstrap,tables) {
 
             //window.Popper = popper; // http://blog.chasepeeler.com/2017/09/12/bootstrap-4-and-requirejs/
 
@@ -111,6 +111,9 @@ requirejs.config({
                 targetControl.on("hitsChanged",
                     function (tableChgInfo) { shotResultTable.onTableChanged(tableChgInfo); }
                 );*/
+                
+                
+                /*
                 var table =shotResultTable.initialize('#bootstraptable',
                     function (i) {
                         //console.log(i.toString());
@@ -120,6 +123,25 @@ requirejs.config({
                         targetControl.deleteShot(i);
                     });
                 targetControl.on("hitsChanged",
+                    function(tableChgInfo){shotResultTable.onTableChanged(tableChgInfo);}
+                     );
+                     */
+
+                    var tableElement = document.getElementById('resultTable');
+                    var table = shotResultTable.initialize(tableElement,
+                        function(i)
+                        {
+                            //console.log(i.toString());
+                            targetControl.setHitHilite(i);
+                        },
+                        function(i)
+                        {
+                            targetControl.deleteShot(i);
+                        });
+            
+                    //shotResultTable.onTableChanged({});
+                    var f = function(targetCtrl){table.onTableChanged(targetCtrl)};
+                    targetControl.on("hitsChanged",
                     function(tableChgInfo){shotResultTable.onTableChanged(tableChgInfo);}
                      );
 
